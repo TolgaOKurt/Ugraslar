@@ -14,12 +14,11 @@ typedef struct Nokta{
 
 //WIN NAME = 99
 //LOSE NAME = -1
-//MAX HAMLE SAYISI BELIRLE SONSUZA KADAR LOOP GÝRMESÝN.
 
 
 
 
-// nokta sayisi boyutuyla array yap gidiþ geliþ verilerini oraya koy
+                                                        // nokta sayisi boyutuyla array yap gidiþ geliþ verilerini oraya koy
 
 
 
@@ -28,15 +27,19 @@ int main(){
 	srand(time(NULL));
 
 	int noktasayisi=2; // win + lose ile beraber minimum 3 olmali
-	printf("win icin -2 isimli nokta son sirada,lose için -1 isimli nokta sondan bir önceki noktadir.\n");
-	printf("(kod girmek için 0 olmak üzere)Nokta sayisi giriniz:"); // !!!!!!!! 0 girilince kod üzerinden aðacý oluþturan programý yaz.. !!!!!!!!!!!!!
+	printf("win icin 99 isimli nokta son sirada,lose için -1 isimli nokta sondan bir onceki noktadir.\n");
+	//printf("(kod girmek icin 0 olmak uzere)");                                                                   // !!!!!!!! 0 girilince kod üzerinden aðacý oluþturan programý yaz.. !!!!!!!!!!!!!
+	printf("Nokta sayisi giriniz:"); 
 	scanf("%d",&noktasayisi);
 	
 	
-	if(noktasayisi=0){ // DAHA HAZIR DEÐÝL BELÝRTECÝ
-		printf("WORK ÝN PROGRESS");
+	if(noktasayisi==0){ // DAHA HAZIR DEÐÝL BELÝRTECÝ                                                           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		printf("WORK IN PROGRESS\n");
+		printf("Kod:");
+		exit(-1);
+		
 	}
-	
+
 	
 	if(noktasayisi<3){
 		printf("Anlamsiz!!");
@@ -86,37 +89,53 @@ int main(){
 	}
 	
 	printf("\n");
+	
+	
+
 
 	int wins=0,loses=0;
+	//EKLENECEKLER: URBO ÝBO BÝK SÝBO STBÝK S2BO 2BO        BELKÝ KO/KOA
+	// ÝBO * STBÝK = URBO
+	// ÝBO = URB*(1-BÝK)
+	// SnBO = ÝBO*(1-BÝK)*BÝK^n
+	//baslangictan bagimsiz olarak KO ve BÝK aðaçla alakalidir baðýmsýzdir. URB ve ÝBO ise baþlangýç noktasina baðlýdýr.
 	
-	//BULUNMA ORANI ARRAYI YAP. URBO HESAPLA
 	
-	//WÝNRATE KO HESAPLIYOR
+	
+	
+	//BULUNMA ORANI ARRAYI YAP. URBO HESAPLA            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
 	
 	Nokta* mevcut=&(liste[0]);
+	int sinir=noktasayisi*6; //5de iyi galiba
+	
+	for(int j=0;j<pow(10,5);j++){//KAÇ KERE BAÞTAN GEZSÝN.
+	
+	
+		mevcut=&(liste[0]); //BURAYI DEÐÝÞTÝRÝNCE BAÞLANGIÇ NOKTASÝNÝ DEÐÝÞTÝRÝRSÝN HER NOKTANIN WRSÝNÝ HESAPLAMASI ÝÇÝN BURAYI DEÐÝÞKEN AYARLA!!       !!!!!!!!!!!!!!!!!!!!!!!!
 		
-	for(int j=0;j<1000;j++){//KAÇ KERE BAÞTAN GEZSÝN.
-		mevcut=&(liste[0]);
-		for(int i=0;i<noktasayisi*5;i++){//KAÇ NOKTADAN SONRA SALSIN.
-		//	printf("\n Mevcut %d",mevcut->name);
+		for(int i=0;i<sinir;i++){//KAÇ NOKTADAN SONRA SALSIN.
 		
-			//BURASÝ ÝLERLEME ÖNCESÝ
-			if(rand()%2==0) mevcut=(mevcut->c1);
-			else mevcut=(mevcut->c2);
+			if(i==sinir-4) printf("\n SINIR ARTMALI \n");
+			
+			//buraya urbo hesabi ayarlican
+			
+			
+			if(rand()%2==0) mevcut=(mevcut->c1);//ilerleme
+			else mevcut=(mevcut->c2);//ilerleme
 		
-			//ÝLERLEDÝK WÝN MÝ LOSE MU CHECK
-			if(mevcut->name==99){
-				//printf("\nWIN");
+
+			if(mevcut->name==99){//kazanma noktasi kontrolu
+
 				wins++;
 				break;
 			}
-			if(mevcut->name==-1){
-			//	printf("\nLose");
+			if(mevcut->name==-1){//kayip noktasi kontrolu
+
 				loses++;
 				break;
 			}
 				
-			// DÝÐER NOKTAYA GEÇÝLDÝ.
 		}	
 		
 	
@@ -125,49 +144,4 @@ int main(){
 	printf("%d tekrar %d win ve %d lose, yani %.3f winrate ve %.3f loserate",wins+loses,wins,loses,(float)(wins)/(wins+loses),(float)(loses)/(wins+loses));
 	
 
-
-	
-/*	Nokta mahmut;
-	Nokta tolga;
-	mahmut.name=1;
-	tolga.name=900;
-	
-	mahmut.c1=&tolga;
-	mahmut.c2=&mahmut;
-	tolga.c1=&mahmut;
-	tolga.c2=&tolga;
-	liste[0]=mahmut;
-	liste[1]=tolga;
-	printf("%d\n",liste[0].name);
-	printf("%d\n",liste[1].name);
-	
-	
-	
-	printf("%p\n",mahmut);
-	printf("%p\n",mahmut.c1);
-	printf("%p\n",tolga);
-	printf("%p\n",mahmut.c2);
-	Nokta* mevcut;
-	mevcut=&mahmut;
-	printf("\n tolga ismi %d",tolga.name);
-	printf("\n mahmut isim %d",mahmut.name);
-	mevcut->name+=10;
-	printf("\n 0mevcut isim %d",mevcut->name);
-	mevcut=(mevcut->c1);
-	printf("\n 1mevcut isim %d",mevcut->name);
-	mevcut->name+=10;
-	mevcut=(mevcut->c2);
-	printf("\n 1mevcut isim %d",mevcut->name);
-	mevcut=(mevcut->c1);
-	printf("\n 2mevcut isim %d",mevcut->name);
-	mevcut->name+=10;
-	mevcut=(mevcut->c2);
-	printf("\n 3mevcut isim %d",mevcut->name);
-
-
-
-
-
-*/
-	//bu düzenek sayesinde eriþim saðlamak çok kolay yey.
 }

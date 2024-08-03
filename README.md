@@ -10,5 +10,15 @@ Para.c açıklaması:{
 
 Agac.c açıklaması:{
       AMAÇ: Bir ağaç üzerinde birbiri ile bağlı noktalar arasinda rastgele ilerleyerek başarı noktasina ulaşma ihtimali üzerine incelemeler
-	en basit örnek olarak 0<-a->1 Şeklinde bir "ağaç"ta %50 ihtimal 0, %50 ihtimal 1'e gidersiniz. 
+	en basit örnek olarak 0<-a->1 Şeklinde bir "ağaç"ta %50 ihtimal 0, %50 ihtimal 1'e gidersiniz.
+	Tanımlar: URBO=Ortalama bulunma miktari
+	 İBO=en az 1 kere bulunma ihtimali 
+	 BİK= kendisinden başlayarak kendisine dönme ihtimali
+	 SİBO=sadece 1 kere bulunma ihtimali
+	 STBİK=1-kendinde bulunmama ihtimali, veya kendisine en az 1 kere dönme ihtimali
+	 SnBO=sadece n kere bulunma ihtimali
+	 nBO= en az n kere bulunma ihtimali
+
+
+	
     }
