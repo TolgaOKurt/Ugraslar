@@ -21,4 +21,9 @@ Agac.c açıklaması:{
 
 
 	
-    }
+   }
+
+Secim sonrasi maks tahmini açıklaması:{
+	youtu.be/WLCwMRJBhuI
+}
+
