@@ -1,0 +1,15 @@
+Bu dosya kağıt üzerinde kendi yaptığım matematiksel uğraşlarımın hakkındadır.
+
+
+
+p harfi kullanılacak sayi miktarını belirtiyor.
+max kelimesi bulunmuş maksimum sonucu belirtiyor. m diye gösterilebilir.
+teomax. teorik olarak olabilecek maksimum maxı belirtiyor. yani maxın maxı.
+teomax tem veya temax veya tema veya t veya teo olarak belirtilebilir.
+dizideki son sayi, son veya s olarak belirtilebilir.
+
+
+t/m , teomax ile max arasında ilişki
+t/s , teomax ile son sayi arasında ilişki
+m/s , max ile son sayi arasındaki ilişki
+
