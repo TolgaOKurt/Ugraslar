@@ -56,18 +56,26 @@ p=8 max=52 max/p=6-7
 
 
 bundan sonrasi ?????
-p=9 max>?=61? max/p=6-7 ise 54<max<63
+p=9 max>?=61? max/p=6-7 ise 54<max<63					m/p regresyonu tahmini
+										64
 1,2,3,4,15,25,36,45,56///
 1,2,3,6,16,24,35,44,55///
 
 
 
-	p==10 max>=73 max/p=7-8 ise 70<max<80    0,6 oranına göre >73
-1,2,3,4,5,18,30,43,54,67
-	p==11 max>=80 max/p=7-8 ise 77<max<88	0,6 oranına göre >87
-	p==12 max>=89 max/p=8-9 ise 96<max<108	0,6 oranına göre >104
-	p==13 max>=99 max/p=8-9 ise 104<max<117	0,6 oranına göre >121    UYUŞMUYOR!!!!
-	p=14 max>=109	
+yok yok yok 1,3,10,18,21,40,43,63,68,-1 a kadar yok başka
+
+
+
+								 
+	p==10 max>=73 max/p=7-8 ise     0,6 oranına göre >73  			78
+1,2,3,4,5,18,30,43,54,67							
+1,2,3,4,7,19,29,42,53,66
+	p==11 max>=85 max/p=7-8 ise 	0,6 oranına göre >87			92
+1,2,3,4,5,6,21,35,50,63,78
+	p==12 max>=89 max/p=8-9 ise 	0,6 oranına göre >104			108	
+	p==13 max>=99 max/p=8-9 ise 	0,6 oranına göre >121    		125
+	p=14 max>=109								143
 	if(p>=15) max>=(p*p+p)/2
 
 
@@ -94,8 +102,12 @@ p	max
 
 
 10 >=73
-11 >=80,87?
-12 >=89,104?
-13 >=99,121?
-14 >=109,140?
+11 >=85,	87?
+12 >=89,	104?
+13 >=99,	121?
+14 >=109,	140?
 >=15 >=(p*p+p)*2/3?
+
+
+
+p=11 reel min max =85 olarak güncellendi!!
