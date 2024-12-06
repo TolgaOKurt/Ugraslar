@@ -80,33 +80,10 @@ void printarr(int* diz,int si){ // Array printliyor
 
 
 
-int yenicalc(int* dizi, int si,int eskimax) {
+int yenicalc(int* dizi, int si) {
     int max = 0;
-    int better=0;
-	for (int i = 0; i <= si; i++) {
-            if (dizi[i] == eskimax) {
-                better=1;
-                break;
-            }
-        }
-        if (better==0){
-	    	for (int i = 0; i <= si; i++) {
-	            for (int j = i; j <= si; j++) {
-	                int toplam = dizi[i] + dizi[j];
-	                int fark = abs(dizi[i] - dizi[j]);
-	
-	                if (toplam == eskimax || fark == eskimax) {
-	                    better=1;
-	                    break;
-	                }
-	            }
-	            if (better==1) break;
-	        }
-		}
-	
-	if(better==0) return eskimax-1;
-	
-	
+    int toplam=0;
+    int fark=0;
     while (true) {
         bool bulundu = false;
 
@@ -124,8 +101,8 @@ int yenicalc(int* dizi, int si,int eskimax) {
         // Toplam ve fark kombinasyonlarýný kontrol et
         for (int i = 0; i <= si; i++) {
             for (int j = i; j <= si; j++) {
-                int toplam = dizi[i] + dizi[j];
-                int fark = abs(dizi[i] - dizi[j]);
+                toplam = dizi[i] + dizi[j];
+                fark = abs(dizi[i] - dizi[j]);
 
                 if (toplam == max + 1 || fark == max + 1) {
                     max++;
@@ -251,7 +228,7 @@ void yis(int p){//ana is bölümü
 	test[p]=-1;
 	sifir(test,p);
 	siradoldur(test);
-	max=yenicalc(test,si,1);
+	max=yenicalc(test,si);
 	copy(test,maxarr,si);
 	copy(test,lower,si);
 	
@@ -264,7 +241,7 @@ void yis(int p){//ana is bölümü
 	
 	int sonucmiktari=0;
 	
-	printarr(upper,si);
+	printarr(upper,si);//UPPER
 	
 	if(p==3) max=9;//önceden hesaplanmýþ ve maksimumun minimum kaç olduðunu bilinen aramalarda hýz için. max=10 olduðundan aramaya 9 ile baþla diyoruz.
 	if(p==4) max=15;
@@ -294,11 +271,10 @@ void yis(int p){//ana is bölümü
 	
 	if(p==9) max=60;// max deðer p arttýkça artar. o yüzden p>k iken sonuc(p)>sonuc(k), buradan sonra deneysel sonuçlarý bulmak çok uzun sürer, ama deneysel sonuçlarýn hangi sayilardan fazla olduðu bulmak kolay.
 	if(p==10) max=72;
-	if(p==11) max=79;
-	if(p==12) max=89;
-	
-	if(p==13) max=98;
-	if(p==14) max=108;
+	if(p==11) max=84;
+	if(p==12) max=96;	
+	if(p==13) max=108;
+	if(p==14) max=120;
 	if(p>14) max=(p*p+p)/2;
 //	if(p=15) max=120; veri almak çok uzun sürüyor.
 	
@@ -320,9 +296,10 @@ void yis(int p){//ana is bölümü
 	int rkrkrkrk=8;    //burasi bulunmayan sonuçlarýn bulunmasi için bilgisayar çalýþýrken daha çok bilgilendirilme yapilmasi için koyulmuþ bir deðiþikliktir.
 	//if(p>=8) rkrkrkrk=9;
 	unsigned int pas=-1,say2=0,hesap=0;
-	int p1=0,p2=0,p0=0,p3=0,p4=0;
+	int p1=0,p2=0,p0=0,p3=0,p4=0,p5=0;
 	int x=0;
 	int sif=0,sif2=0,sif3=0;
+	int toplamd=0,better=0;;
 	for(i=0;1;i++){
 		say2++;
 		if(abs(say2)%(int)(pow(10,rkrkrkrk))*p==0){
@@ -340,10 +317,10 @@ void yis(int p){//ana is bölümü
 		
 
 		
-		if(2*test[p-1]<max) {//pass0   deneysel sonuç/max(son) sayi küçük eþittir 2'ye. eðer deneysel sonuç > 2*max ise. deneysel sonuç nasýl elde edilecek? bir dizide en yüksek sonuç max+max=2*maxtir.
+	/*	if(2*test[p-1]<max) {//pass0   deneysel sonuç/max(son) sayi küçük eþittir 2'ye. eðer deneysel sonuç > 2*max ise. deneysel sonuç nasýl elde edilecek? bir dizide en yüksek sonuç max+max=2*maxtir.
 			p0++;				
 			continue;
-		}
+		}*/
 		
 			
 		if(2*test[(p-1)/2]>max){//pass1 dizideki ortanca sayi, tek sayilarda aþaðý yuvarlanacak þekilde, sonucun yarisindan küçük olmali incelendiðinde böyle bir sonuca varýlmýþtýr.!! Kesinlik yok ancak potansiyel var.
@@ -352,23 +329,50 @@ void yis(int p){//ana is bölümü
 		}		
 		
 
-		if(test[1]>=test[0]*p){//pass2 ikinci sayinin en küçük sayinin p katindan fazla olduðu görülmemiþtir. !!Kesinlik yok ancak potansiyel var.
+	/*	if(test[1]>=test[0]*p){//pass2 ikinci sayinin en küçük sayinin p katindan fazla olduðu görülmemiþtir. !!Kesinlik yok ancak potansiyel var.
 			p2++;
 			continue;	
 		}
+		*/
 		
 		
-		
-		if(p>6 && test[0]+test[1]+test[3]>p*(p-1)){//ilk 3 sayinin toplami büyüdükçe maxdan küçükleþiyor. max da p*p-1den küçükleþiyor.
+	/*	if(p>6 && test[0]+test[1]+test[3]>p*(p-1)){//ilk 3 sayinin toplami büyüdükçe maxdan küçükleþiyor. max da p*p-1den küçükleþiyor.
 			p3++;
 			continue;
-		}
+		}*/
 	
 		if(test[0]+test[p-1]>max+p){//
 			p4++;
 			continue;
 		}
 		
+		toplamd=0;
+		better=0;
+		for (int i = 0; i <= si; i++) {
+            if (test[i] == max) {
+                better=1;
+                break;
+            }
+        }
+        if (better==0){
+	    	for (int i = 0; i <= si; i++) {
+	            for (int j = i; j <= si; j++) {
+	                toplamd = test[i] + test[j];
+	                if (toplamd == max) {
+	                    better=1;
+	                    break;
+	                }
+	            }
+	            if (better==1) break;
+	        }
+		}
+	
+		if(better==0){
+			p5++;
+			continue;
+		}
+	
+	
 		//Burada pass3 yatýyor RIP
 		
 		//Burada pass4 yatýyor RIP
@@ -378,8 +382,7 @@ void yis(int p){//ana is bölümü
 			sif3++;
 			printf("\n Hesap sayaci %d kere sifirlandi \n",sif3);
 		} */
-		temp=yenicalc(test,si,max);
-
+		temp=yenicalc(test,si);
 		if(temp==max&&temp>teomax/2){
 			sonucmiktari++;
 			printf("\n%d icin %d. sonuc:\n",temp,sonucmiktari);
@@ -398,12 +401,14 @@ void yis(int p){//ana is bölümü
 
 	}
 		
-	
-	
+	float tpp=p0+p1+p2+p3+p4+p5;
+	hesap=hesap;
 	printf("\n%d sonuc bulundu.\n",sonucmiktari);
-	printf("\nBitti toplam=%d, pass=%d, max=%d, hesaplanan=%d\n",say2,p0+p1+p2+p3+p4,max,hesap);
+	printf("\nBitti toplam=%d, pass=%.0f, max=%d, hesaplanan=%d\n",say2,tpp,max,hesap);
 //	printarr(maxarr); //istersen en son bi daha söylesin sana
-	printf("\np0=%d p1=%d p2=%d p3=%d p4=%d\n",p0,p1,p2,p3,p4);
+//	printf("\np0=%d p1=%d p2=%d p3=%d p4=%d p5=%d \n",p0,p1,p2,p3,p4,p5);
+	printf("\n yuzdelikler pass=%f hesap=%f",100*(float)tpp/say2,100*(float)hesap/say2);
+	printf("\n pas yuzdelikler p1=%f p4=%f p5=%f",100*(float)p1/tpp,100*(float)p4/tpp,100*(float)p5/tpp);
 	return;
 	
 }
@@ -412,7 +417,7 @@ void yis(int p){//ana is bölümü
 int main(){	
 	printf(" Ai calismasi\n");
 	printf("Program basladi. Birazdan ilerleme bilgilendirmesi yapilir.\n");
-	int p=6;
+	int p=14;
 	
 	yis(p);
 
