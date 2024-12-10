@@ -62,7 +62,60 @@ void upperart(int* diz,int si){
 }
 
 
+int dizilicalc(int* dizi, int si) {
+    int max = 0;
+    int p=si+1;
+    int toplamboyut=(p*(p+1))/2;
+    int farkboyut=(p*(p-1))/2;
+    int fullboyut=toplamboyut+farkboyut+p;
 
+    int dizsay=0,toplamsay=0,farksay=0;
+    int i=0;
+    int sira=0;
+    int fulldizi[p+toplamboyut+farkboyut];
+
+	for(int i=0;i<=si;i++){
+		fulldizi[sira]=dizi[i];
+		sira++;
+	}
+	
+ 	for(int i=0;i<=si;i++){
+ 		for(int j=i;j<=si;j++){
+	 		fulldizi[sira]=dizi[i]+dizi[j];
+	 		sira++;
+		}
+ 		
+	}
+	for(int i=0;i<=si;i++){
+ 		for(int j=i+1;j<=si;j++){
+	 		fulldizi[sira]=abs(dizi[i]-dizi[j]);
+	 		sira++;
+		}
+ 		
+	}
+
+	QS(fulldizi,0,fullboyut-1);
+	
+/*	for(int l=0;l<fullboyut;l++){
+		printf("%d,",fulldizi[l]);
+	}*/
+	int l=0;
+	for(l=0;l<fullboyut;l++){
+	//	printf("\n l=%d yani %d suan",l,fulldizi[l]);
+		if(fulldizi[l]<max+1){
+		//printf(" pass");
+			continue;
+		} 
+		else if(fulldizi[l]==max+1){
+			//printf(" max artar");
+			max++;
+		}
+		else break;
+		
+	}
+	return max;
+	
+}
 
 void printarr(int* diz,int si){ // Array printliyor
 	int i=0;
@@ -80,9 +133,9 @@ void printarr(int* diz,int si){ // Array printliyor
 
 
 
-int yenicalc(int* dizi, int si) {
-    int max = 0;
-    int toplam=0;
+int yenicalc(int* dizi, int si) {//!!!!!!!!!!!! ben dizi içinde sýralama ile bulma yöntemini yaptýðýmý hatýrlýyom eskicalc oydu niye buna geçtim ki. p küçükken bu daha hýzlý herhalde neyse þimdi bana si>7 için dizili hesap lazým test edelim bakalým !!!!!!!!!!
+	int max = 0;//zaten yukarda qs de duruyor þuanda sýralancak biþi  de yok. // yav yok dizilerle yapýnca(x<=9 için) daha da yavaþþ offffff neyi kaçýrýyorum. NEYSE BU DÝZÝLÝ ARAMA YONTEMÝ EKSTRA BÝR LOGN EKLÝYOR SANIRIM BU YUZDEN VAZGECTÝMM. EN ÝYÝ YONTEM BENÝM YENÝCALCIM HUUUUAAAAAHHH BOYL
+    int toplam=0;               
     int fark=0;
     while (true) {
         bool bulundu = false;
@@ -212,6 +265,7 @@ void yis(int p){//ana is bölümü
 	int si=p-1;
 	time_t start,end;//kronometre ayarý
 	int i=0;
+	//int degisim=9; // DÝGER YONTEME GECME ÝSÝ BENÝM YENÝCALC YONTEMÝM COK DAHA HIZLI BU DÝZÝLÝ ARAMADAN !!!! AAAAAAAAAAAAA
 	int upper[p+1];
 	upper[p]=-1;
 	sifir(upper,p);
@@ -228,6 +282,11 @@ void yis(int p){//ana is bölümü
 	test[p]=-1;
 	sifir(test,p);
 	siradoldur(test);
+	
+	/*if(p>=degisim){
+		max=dizilicalc(test,si);
+	}
+	else */
 	max=yenicalc(test,si);
 	copy(test,maxarr,si);
 	copy(test,lower,si);
@@ -293,7 +352,7 @@ void yis(int p){//ana is bölümü
 	
 	
 	start=clock();// zaman baþladý.
-	int rkrkrkrk=8;    //burasi bulunmayan sonuçlarýn bulunmasi için bilgisayar çalýþýrken daha çok bilgilendirilme yapilmasi için koyulmuþ bir deðiþikliktir.
+	int rkrkrkrk=7;    //burasi bulunmayan sonuçlarýn bulunmasi için bilgisayar çalýþýrken daha çok bilgilendirilme yapilmasi için koyulmuþ bir deðiþikliktir.
 	//if(p>=8) rkrkrkrk=9;
 	unsigned int pas=-1,say2=0,hesap=0;
 	int p1=0,p2=0,p0=0,p3=0,p4=0,p5=0;
@@ -303,7 +362,8 @@ void yis(int p){//ana is bölümü
 	for(i=0;1;i++){
 		say2++;
 		if(abs(say2)%(int)(pow(10,rkrkrkrk))*p==0){
-			printf("\n\ntoplam=%u, pass=%u, hesaplanan=%u, max=%d\n\n",say2,pas,hesap,max);	//gidiþat söyleyici
+			end=clock();
+			printf("\n\ntoplam=%u, pass=%u, hesaplanan=%u, max=%d\nSure=%d\n",say2,pas,hesap,max,end-start);	//gidiþat söyleyici
 			if(p>=8) gidisat(test,si);//gidisat
 			printf("\n");			
 		}
@@ -382,6 +442,10 @@ void yis(int p){//ana is bölümü
 			sif3++;
 			printf("\n Hesap sayaci %d kere sifirlandi \n",sif3);
 		} */
+		/*if(p>=degisim){
+			temp=dizilicalc(test,si);
+		}
+		else */
 		temp=yenicalc(test,si);
 		if(temp==max&&temp>teomax/2){
 			sonucmiktari++;
@@ -417,7 +481,7 @@ void yis(int p){//ana is bölümü
 int main(){	
 	printf(" Ai calismasi\n");
 	printf("Program basladi. Birazdan ilerleme bilgilendirmesi yapilir.\n");
-	int p=14;
+	int p=9;
 	
 	yis(p);
 
