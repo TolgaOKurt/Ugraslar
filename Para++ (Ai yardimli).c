@@ -13,8 +13,73 @@
 
 //YAPILACAKLAR; MATEMATÝKSEL OLARAK OLMAYACAK DÝZÝLERÝ ÖNCEDEN BELÝRLEYÝP PAS GEÇMESÝNÝ SAÐLA. BÖYLELÝKLE PROGRAMIN HIZI ARTSIN, DAHA NOKTA ATIÞI SONUÇLAR BULSUN..
 
+void sifird(double* diz,int s){//dizinin ilk "s" birimini 0 yapýyor.
+	int i=0;
+	for (i=0;i<s;i++){
+		diz[i]=0;
+	}
+}
+
+void printarrd(double* diz,int si){ // Array printliyor
+	int i=0;
+	for(i=0;i<=si;i++){
+		printf("%d -> ",i);
+		printf("%f\n",diz[i]);
+	}
+	printf("\n");
+	return;
+}
 
 
+
+void printarr(int* diz,int si){ // Array printliyor
+	int i=0;
+	for(i=0;i<=si;i++){
+		printf("%d -> ",i);
+		printf("%d\n",diz[i]);
+	}
+	printf("\n");
+	return;
+}
+
+int fsskm(int* dizi,int boyut,int max){ // fsskm=farklar standart sapma kucuk mu
+	int buyuk=0;
+	double farktoplami=0;
+	double farkdizisi[boyut-1];
+	double farktt=0;
+	double temp=0;
+	sifird(farkdizisi,boyut-1);
+	for(int i=0;i<boyut-1;i++){
+		farkdizisi[i]=(double)dizi[i+1]-(double)dizi[i];
+		farktoplami=farktoplami+farkdizisi[i];
+	}
+	
+	double ort=farktoplami/(boyut-1);
+//	printf("\n ort deger== %f \n",ort);
+	for(int i=0;i<boyut-1;i++){
+		temp=(farkdizisi[i]-ort);
+	//	printf("%f = %f - %f / %f\n",temp,farkdizisi[i],ort,farktoplami);
+		farkdizisi[i]=temp*temp;
+	}
+//	printarrd(farkdizisi,boyut-2);
+	for(int i=0;i<boyut-1;i++){
+		farktt=farktt+farkdizisi[i];
+	}
+//	printf("\n dizinin toplami== %f \n",farktt);
+	farktt=farktt/(boyut-1);
+//	printf("\n bolunmesi== %f \n",farktt);
+	farktt=pow(farktt,0.5);
+	
+	
+	float fiyakalisism=(boyut*boyut+boyut)/4;
+//	if (max>15) fiyakalisism=(1+(double)max/4); // ne yapmali??
+	//printf("\n buuuu->  %f",fiyakalisism);
+	if(farktt>fiyakalisism){
+//	printf("SS=%f",farktt);
+	return -1;
+	}
+	else return 0;
+}
 
 void QS(int arr[], int low, int high) { // internetten çalýnmýþ quicksort
     if (low < high) {
@@ -117,15 +182,7 @@ int dizilicalc(int* dizi, int si) {
 	
 }
 
-void printarr(int* diz,int si){ // Array printliyor
-	int i=0;
-	for(i=0;i<=si;i++){
-		printf("%d -> ",i);
-		printf("%d\n",diz[i]);
-	}
-	printf("\n");
-	return;
-}
+
 
 // burada sifir fonksiyonun ikizi vardý. gereksizlikten silindi. RIP.
 
@@ -355,7 +412,7 @@ void yis(int p){//ana is bölümü
 	int rkrkrkrk=7;    //burasi bulunmayan sonuçlarýn bulunmasi için bilgisayar çalýþýrken daha çok bilgilendirilme yapilmasi için koyulmuþ bir deðiþikliktir.
 	//if(p>=8) rkrkrkrk=9;
 	unsigned int pas=-1,say2=0,hesap=0;
-	int p1=0,p2=0,p0=0,p3=0,p4=0,p5=0;
+	int p1=0,p2=0,p0=0,p3=0,p4=0,p5=0,p6=0;
 	int x=0;
 	int sif=0,sif2=0,sif3=0;
 	int toplamd=0,better=0;;
@@ -363,7 +420,7 @@ void yis(int p){//ana is bölümü
 		say2++;
 		if(abs(say2)%(int)(pow(10,rkrkrkrk))*p==0){
 			end=clock();
-			printf("\n\ntoplam=%u, pass=%u, hesaplanan=%u, max=%d\nSure=%d\n",say2,pas,hesap,max,end-start);	//gidiþat söyleyici
+			printf("\nPass=%u,hesaplanan=%u,max=%d,Sure=%dsn\np6=%d",pas,hesap,max,(end-start)/1000,p6);	//gidiþat söyleyici
 			if(p>=8) gidisat(test,si);//gidisat
 			printf("\n");			
 		}
@@ -432,6 +489,17 @@ void yis(int p){//ana is bölümü
 			continue;
 		}
 	
+		//FARK STANDART SATMA ORTALAMASINA GORE MUHTEMEL ELEMELER // fsskm=farklar standart sapma kucuk mu
+		/*if(-1==fsskm(test,p,max)){
+			p6++;
+			continue;
+		}*/
+	
+	
+	
+	
+	
+	
 	
 		//Burada pass3 yatýyor RIP
 		
@@ -449,30 +517,37 @@ void yis(int p){//ana is bölümü
 		temp=yenicalc(test,si);
 		if(temp==max&&temp>teomax/2){
 			sonucmiktari++;
-			printf("\n%d icin %d. sonuc:\n",temp,sonucmiktari);
+			end=clock();
+			printf("\n(%dsn)%d icin %d. sonuc:\n",(end-start)/1000,temp,sonucmiktari);
 			printarr(test,si);
+			
+			
 
 		}
 		if(temp>max){
 			max=temp;
 			end=clock();
 			sonucmiktari=1;
-			printf("\n%d bulundu(sure=%d):\n",temp,end-start);
+			printf("\n(%dsn)%d bulundu:\n",(end-start)/1000,temp);
 			printarr(test,si);
 			copy(test,maxarr,si);
+			
+			
 		}
 		
 
 	}
 		
-	float tpp=p0+p1+p2+p3+p4+p5;
+	float tpp=p0+p1+p2+p3+p4+p5+p6;
 	hesap=hesap;
 	printf("\n%d sonuc bulundu.\n",sonucmiktari);
 	printf("\nBitti toplam=%d, pass=%.0f, max=%d, hesaplanan=%d\n",say2,tpp,max,hesap);
 //	printarr(maxarr); //istersen en son bi daha söylesin sana
 //	printf("\np0=%d p1=%d p2=%d p3=%d p4=%d p5=%d \n",p0,p1,p2,p3,p4,p5);
-	printf("\n yuzdelikler pass=%f hesap=%f",100*(float)tpp/say2,100*(float)hesap/say2);
-	printf("\n pas yuzdelikler p1=%f p4=%f p5=%f",100*(float)p1/tpp,100*(float)p4/tpp,100*(float)p5/tpp);
+	printf("\nYuzdelikler pass=%.2f hesap=%.2f",100*(float)tpp/say2,100*(float)hesap/say2);
+	printf("\np1=%.2f p4=%.2f p5=%.2f p6=%.2f",100*(float)p1/tpp,100*(float)p4/tpp,100*(float)p5/tpp,100*(float)p6/tpp);
+	end=clock();
+	printf("\nSure=%dsn\n",(end-start)/1000);
 	return;
 	
 }
@@ -481,7 +556,7 @@ void yis(int p){//ana is bölümü
 int main(){	
 	printf(" Ai calismasi\n");
 	printf("Program basladi. Birazdan ilerleme bilgilendirmesi yapilir.\n");
-	int p=9;
+	int p=7;
 	
 	yis(p);
 
