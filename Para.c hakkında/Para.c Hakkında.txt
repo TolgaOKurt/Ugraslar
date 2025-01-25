@@ -1,0 +1,120 @@
+Bu dosya kağıt üzerinde kendi yaptığım matematiksel uğraşlarımın hakkındadır.
+
+
+
+p harfi kullanılacak sayi miktarını belirtiyor.
+max kelimesi bulunmuş maksimum sonucu belirtiyor. m diye gösterilebilir.
+teomax. teorik olarak olabilecek maksimum maxı belirtiyor. yani maxın maxı.
+teomax tem veya temax veya tema veya t veya teo olarak belirtilebilir.
+dizideki son sayi, son veya s olarak belirtilebilir.
+
+
+t/m , teomax ile max arasında ilişki
+t/s , teomax ile son sayi arasında ilişki
+m/s , max ile son sayi arasındaki ilişki
+
+
+Sonuçlar
+p=1 max=2 max/p=2
+1//
+p=2 max=6 max/p=3
+2,3//
+p=3 max=10 max/p=3-4
+2,4,5///
+3,4,5///
+
+p=4 max=16 max/p=4
+1,2,8,13///
+3,6,7,8///
+4,6,7,9///
+
+p=5 max=24 max/p=4-5
+4,8,10,11,13///
+
+p=6 max=32 max/p=5-6
+4,8,12,14,15,17///
+5,7,12,13,15,16///
+
+p=7 max=40 max/p=5-6
+2,11,13,14,18,19,21///
+2,13,14,16,17,22,23///
+4,8,12,16,18,19,21///
+5,10,15,17,18,19,21///
+5,11,13,17,19,20,40///
+6,12,15,16,17,19,20///
+7,9,15,17,19,20,40///
+
+p=8 max=52 max/p=6-7
+2,4,6,7,25,26,40,41///
+5,8,19,20,22,23,29,55///
+6,12,18,21,22,23,25,26///
+
+
+
+
+
+
+
+bundan sonrasi ?????
+p=9 max>?=61? max/p=6-7 ise 54<max<63					m/p regresyonu tahmini
+										64
+1,2,3,4,15,25,36,45,56///
+1,2,3,6,16,24,35,44,55///
+
+
+
+yok yok yok 1,3,10,18,21,40,43,63,68,-1 a kadar yok başka
+
+
+
+								 
+	p==10 max>=73 max/p=7-8 ise     0,6 oranına göre >73  			78
+1,2,3,4,5,18,30,43,54,67							
+1,2,3,4,7,19,29,42,53,66
+	p==11 max>=85 max/p=7-8 ise 	0,6 oranına göre >87			92
+1,2,3,4,5,6,21,35,50,63,78
+	p==12 max>=97 max/p=8-9 ise 	0,6 oranına göre >104			108
+
+
+
+	
+	p==13 max>=109 max/p=8-9 ise 	0,6 oranına göre >121    		125
+	p=14 max>=121								143
+	if(p>=15) max>=(p*p+p)/2
+
+
+
+!!!!!??? Max>= (p*p+p)*2/3
+
+
+
+
+
+p	max
+1	2
+2	6
+3	10
+4	16
+5	24
+6	32
+7	40
+8	52
+
+9 	>=61 
+
+
+
+
+10 >=73
+11 >=85,	87?
+12 >=97,	104?
+13 >=109,	121?
+14 >=121,	140?
+>=15 >=(p*p+p)*2/3?
+
+
+
+p=11 reel min max =85 olarak güncellendi!!
+p=12 reel min max =97 olarak güncellendi!!
+p=13 reel min max =109 olarak güncellendi!!
+p=14 reel min max =121 olarak güncellendi!!
