@@ -10,10 +10,12 @@ int main(){
 	
 	//printf("Slm Dnya\n");
 	
-	int boyut=1,topmiktari=10,maxtur=100,dagilimdegiskeni=71;
-	int dagilim[maxtur+1][dagilimdegiskeni];
-	int i=0,j=0;
-	if(boyut==1){
+	int boyut=1,topmiktari=50,maxtur=50,dagilimdegiskeni=41;//deðiþtirilebilirler
+	
+	
+	int dagilim[maxtur+1][dagilimdegiskeni];//1 boyut stat tracker
+	int i=0,j=0;//döngü deðiþkenleri
+	if(boyut==1){//boyut 1 ise
 		for(i=0;i<=maxtur;i++){
 			for(j=0;j<dagilimdegiskeni;j++){
 				dagilim[i][j]=0;
@@ -21,13 +23,14 @@ int main(){
 		}
 	}
 	
-	int merkezsayaci[topmiktari];
+	int merkezsayaci[topmiktari];//merkezden geçme sayilarini tutan array
 	
-	float TopKonumlari[boyut][topmiktari];
-	float Yon[boyut][topmiktari];
-	
-	//basit stat
-	float ortuzaklik=0,ortkonum=0,topkonum=0,topuzaklik=0,merkezedonmeorani=0,merkezdengecmesayisi;
+	float TopKonumlari[boyut][topmiktari];// toplarýn konumlarini tutan array
+	float Yon[boyut][topmiktari];//toplarýn sýradaki hareketlerini tutan array
+	float eskilertoplami=0,frand=0;
+	int uygunluksayaci=0;
+	//basit stats
+	float ortuzaklik=0,ortkonum[boyut],topkonum[boyut],topuzaklik=0,merkezedonmeorani=0,merkezdengecmesayisi;
 	int tur=0;
 	
 	
@@ -44,13 +47,31 @@ int main(){
 	
 
 	
-	printf("Baslangic:  ");
-	for(j=0;j<boyut;j++){ //printer
-		for(i=0;i<topmiktari;i++){
-			printf("%.2f  ",TopKonumlari[j][i]);
+	//printf("Baslangic: ");
+	
+	
+	
+	/*
+	for(i=0;i<topmiktari;i++){ //printer
+		printf("(");
+		for(j=0;j<boyut;j++){
+			if(j!=0)printf(",");
+			printf("%6.2f",TopKonumlari[j][i]);
 		} 
-	}
-	if(boyut==1){
+		printf(")  ");
+	}*/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	if(boyut==1){//boyut 1 ise ayar
 		for(i=0;i<topmiktari;i++){ //ilk dagilim
 			for(j=0;j<boyut;j++){
 				
@@ -64,64 +85,111 @@ int main(){
 	
 	printf("\n");
 	while(tur<maxtur){
-		printf("Tur:%d      ",tur);
-		for(i=0;i<topmiktari;i++){ //random yon
+		//printf("Tur:%d      ",tur);
+		
+		
+		for(i=0;i<topmiktari;i++){ //random yön
+			eskilertoplami=0;
+			//printf("\n 0 olmali %f\n",eskilertoplami);
+			
+			
 			for(j=0;j<boyut;j++){
-				Yon[j][i]=-1+2*(rand()%2);
-			} 
+				frand=rand();
+				frand=2*frand/RAND_MAX-1;
+				//printf("\n random sayi %f\n",frand);
+				
+				if(j<boyut-1){
+					Yon[j][i]=frand*sqrt(1-eskilertoplami);
+				}
+				else{
+					Yon[j][i]=(-1+2*(rand()%2))*(sqrt(1-eskilertoplami));
+				}
+				
+				//printf("\n yon %f\n",Yon[j][i]);
+				eskilertoplami+=Yon[j][i]*Yon[j][i];
+				//printf("\n toplam %f\n",eskilertoplami);
+				
+			}
+		
+			//printf("1 olmali ki %.5f",eskilertoplami);
 		}
 		
+		// +-x=sqrt(1)
+		// +-y=sqrt(1-xx)
+		// +-z=sqrt(1-[xx+yy])
+		// +-w=sqrt(1-[xx+yy+zz]
+		
+		
+		
+		
+		
+		eskilertoplami=0;
 		for(i=0;i<topmiktari;i++){ //basit yeni yol
+			
 			for(j=0;j<boyut;j++){
-			
-			
-			
-			
+				
 
-			
-			
-			
-			
+				
+				
 				TopKonumlari[j][i]+=Yon[j][i];
-				if(abs(TopKonumlari[j][i])<0.5){
-					//printf("\n%d Degisti",merkezedondumu[i]);
-					merkezsayaci[i]+=1;
-					//printf(" %d oldu cunku %.2f oldu %d numara %\n",merkezedondumu[i],TopKonumlari[j][i],i+1);
-					
-				}
-				topuzaklik+=abs(TopKonumlari[j][i]);
-				topkonum+=TopKonumlari[j][i];
+				topuzaklik+=sqrt(TopKonumlari[j][i]*TopKonumlari[j][i]);
+				
+				
+				
+				//if(j==2)printf("  %f   ",TopKonumlari[j][i]);
+				topkonum[j]+=TopKonumlari[j][i];
+				//if(j==2)printf("  %f   ",topkonum[j]);
+				
+				
+				
 				
 				if(boyut==1){
 					if(abs(TopKonumlari[j][i])<=(dagilimdegiskeni-1)/2){					
 						dagilim[tur+1][(int)TopKonumlari[j][i]+(dagilimdegiskeni-1)/2]+=1;
 					}
 				}
+				eskilertoplami+=TopKonumlari[j][i]*TopKonumlari[j][i];
 				
 				
 				
 				
 			} 
+			eskilertoplami=sqrt(eskilertoplami);
+			if(eskilertoplami<0.5){
+				merkezsayaci[i]+=1;
+				//printf("\n MERKEZ %f \n",eskilertoplami);
+			} 
+			
+			
+			eskilertoplami=0;
 		}
 		
-		
+		/*
 		for(i=0;i<topmiktari;i++){ //printer2
 			printf("(");
 			for(j=0;j<boyut;j++){
 				if(j!=0)printf(",");
-				printf("%.2f",TopKonumlari[j][i]);
+				printf("%6.2f",TopKonumlari[j][i]);
 				
 			} 
 			printf(")  ");
 		}
-		printf("\n");
+		printf("\n");*/
 		tur++;
 	}	
 	
 	
-	ortuzaklik=topuzaklik/(topmiktari*maxtur);
-	ortkonum=topkonum/(topmiktari*maxtur);
-	printf("\nortkonum= %f ve ortuzaklik=%f\n",ortkonum,ortuzaklik);
+	ortuzaklik=topuzaklik/(topmiktari*maxtur);//stats
+	printf("\n ortkonum=(");
+	for(i=0;i<boyut;i++){
+		if(i!=0)printf(",");
+		//printf("\n test %6.2f   \n",topkonum[i]);
+		ortkonum[i]=topkonum[i]/(topmiktari*maxtur);
+		printf("%6.2f",ortkonum[i]);
+	}
+	printf(")  ");
+	
+	printf("ve ortuzaklik=%f\n",ortuzaklik);
 	
 	for(i=0;i<topmiktari;i++){
 		merkezdengecmesayisi+=merkezsayaci[i];		
@@ -131,22 +199,24 @@ int main(){
 	}
 	merkezdengecmesayisi/=topmiktari;
 	merkezedonmeorani/=topmiktari;
-	printf("Merkezden gecme sayisi %.4f donmeorani %.4f",merkezdengecmesayisi,merkezedonmeorani);
+	
+	
+	printf("top basi Merkezden gecme sayisi %.4f ve en az bir kere gecme orani %.4f",merkezdengecmesayisi,merkezedonmeorani);
 	if(boyut==1){
 		printf("\n");
 		for(i=0;i<=maxtur;i++){
 			printf("\n");
 			for(j=0;j<dagilimdegiskeni;j++){
 		
-				printf(" %d",dagilim[i][j]);
+				printf("%2.d",dagilim[i][j]);
 	
 			}	
 		}			
 	}
 	
 	
-	if(boyut==1){
-		printf("\n\nDesen basliyor\n");
+/*	if(boyut==1){
+		printf("\n\nDesen\n");
 		for(i=0;i<=maxtur;i++){
 			printf("\n");
 			for(j=0;j<dagilimdegiskeni-6;j++){
@@ -156,7 +226,7 @@ int main(){
 			}	
 		}			
 	}
-	
+*/	
 	
 	
 	
