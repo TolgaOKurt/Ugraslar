@@ -10,18 +10,18 @@ int main(){
 	
 	//printf("Slm Dnya\n");
 	
-	int boyut=1,topmiktari=50,maxtur=50,dagilimdegiskeni=41;//deðiþtirilebilirler
+	int boyut=4,topmiktari=100,maxtur=100,dagilimdegiskeni=1;//deðiþtirilebilirler
 	
 	
-	int dagilim[maxtur+1][dagilimdegiskeni];//1 boyut stat tracker
+	//int dagilim[maxtur+1][dagilimdegiskeni];//1 boyut stat tracker
 	int i=0,j=0;//döngü deðiþkenleri
-	if(boyut==1){//boyut 1 ise
+	/*if(boyut==1){//boyut 1 ise
 		for(i=0;i<=maxtur;i++){
 			for(j=0;j<dagilimdegiskeni;j++){
 				dagilim[i][j]=0;
 			}	
 		}
-	}
+	}*/
 	
 	int merkezsayaci[topmiktari];//merkezden geçme sayilarini tutan array
 	
@@ -30,17 +30,22 @@ int main(){
 	float eskilertoplami=0,frand=0;
 	int uygunluksayaci=0;
 	//basit stats
-	float ortuzaklik=0,ortkonum[boyut],topkonum[boyut],topuzaklik=0,merkezedonmeorani=0,merkezdengecmesayisi;
+	float ortuzaklik=0,ortkonum[boyut],topkonum[boyut],topuzaklik=0,merkezedonmeorani=0,merkezdengecmesayisi=0;
 	int tur=0;
 	
 	
-	
+	for(i=0;i<boyut;i++){ //0 dolu matrix
+		ortkonum[i]=0;//0 dolu
+		topkonum[i]=0;
+
+	}
 
 	
 	for(i=0;i<topmiktari;i++){ //0 dolu matrix
 		merkezsayaci[i]=0;//0 dolu
 		for(j=0;j<boyut;j++){
 			TopKonumlari[j][i]=0;
+			Yon[j][i]=0;
 		} 
 	}
 	
@@ -69,7 +74,7 @@ int main(){
 	
 	
 	
-	
+	/*
 	
 	if(boyut==1){//boyut 1 ise ayar
 		for(i=0;i<topmiktari;i++){ //ilk dagilim
@@ -82,7 +87,7 @@ int main(){
 			}	
 		}
 	}	
-	
+	*/
 	printf("\n");
 	while(tur<maxtur){
 		//printf("Tur:%d      ",tur);
@@ -94,15 +99,33 @@ int main(){
 			
 			
 			for(j=0;j<boyut;j++){
+				
 				frand=rand();
 				frand=2*frand/RAND_MAX-1;
 				//printf("\n random sayi %f\n",frand);
 				
 				if(j<boyut-1){
-					Yon[j][i]=frand*sqrt(1-eskilertoplami);
+					if(1-eskilertoplami<0.001){
+						Yon[j][i]=0;
+					}
+					else{
+						Yon[j][i]=frand*sqrt(1-eskilertoplami);
+					}
+
+					
+					if (isfinite(Yon[j][i])==0) {
+						printf("y yoooo %f=%f*sqrt(1-%f)\n",Yon[j][i],frand,eskilertoplami);
+						exit(4);
+					}
+					
 				}
 				else{
 					Yon[j][i]=(-1+2*(rand()%2))*(sqrt(1-eskilertoplami));
+					
+					if (isfinite(Yon[j][i])==0) {
+						printf("y yoooo %f\n",Yon[j][i]);
+						exit(5);
+					}
 				}
 				
 				//printf("\n yon %f\n",Yon[j][i]);
@@ -110,10 +133,9 @@ int main(){
 				//printf("\n toplam %f\n",eskilertoplami);
 				
 			}
-		
+			
 			//printf("1 olmali ki %.5f",eskilertoplami);
 		}
-		
 		// +-x=sqrt(1)
 		// +-y=sqrt(1-xx)
 		// +-z=sqrt(1-[xx+yy])
@@ -129,25 +151,22 @@ int main(){
 			for(j=0;j<boyut;j++){
 				
 
-				
+
 				
 				TopKonumlari[j][i]+=Yon[j][i];
 				topuzaklik+=sqrt(TopKonumlari[j][i]*TopKonumlari[j][i]);
+				//printf("%f ve j= %d\n",TopKonumlari[j][i],j);
 				
 				
-				
-				//if(j==2)printf("  %f   ",TopKonumlari[j][i]);
 				topkonum[j]+=TopKonumlari[j][i];
-				//if(j==2)printf("  %f   ",topkonum[j]);
+
 				
-				
-				
-				
+				/*
 				if(boyut==1){
 					if(abs(TopKonumlari[j][i])<=(dagilimdegiskeni-1)/2){					
 						dagilim[tur+1][(int)TopKonumlari[j][i]+(dagilimdegiskeni-1)/2]+=1;
 					}
-				}
+				}*/
 				eskilertoplami+=TopKonumlari[j][i]*TopKonumlari[j][i];
 				
 				
@@ -180,16 +199,16 @@ int main(){
 	
 	
 	ortuzaklik=topuzaklik/(topmiktari*maxtur);//stats
-	printf("\n ortkonum=(");
+	printf("\nOK=(");
 	for(i=0;i<boyut;i++){
 		if(i!=0)printf(",");
-		//printf("\n test %6.2f   \n",topkonum[i]);
+		//printf("\n test tk %6.2f   \n",topkonum[i]);
 		ortkonum[i]=topkonum[i]/(topmiktari*maxtur);
 		printf("%6.2f",ortkonum[i]);
 	}
-	printf(")  ");
+	printf(") ");
 	
-	printf("ve ortuzaklik=%f\n",ortuzaklik);
+	printf("OU=%f",ortuzaklik);
 	
 	for(i=0;i<topmiktari;i++){
 		merkezdengecmesayisi+=merkezsayaci[i];		
@@ -201,8 +220,10 @@ int main(){
 	merkezedonmeorani/=topmiktari;
 	
 	
-	printf("top basi Merkezden gecme sayisi %.4f ve en az bir kere gecme orani %.4f",merkezdengecmesayisi,merkezedonmeorani);
-	if(boyut==1){
+	printf(" TBMGS=%.4f EA1KGO=%.4f",merkezdengecmesayisi,merkezedonmeorani);
+	
+	/*
+	if(boyut==1){//daðýlým görseli
 		printf("\n");
 		for(i=0;i<=maxtur;i++){
 			printf("\n");
@@ -212,7 +233,7 @@ int main(){
 	
 			}	
 		}			
-	}
+	}*/
 	
 	
 /*	if(boyut==1){
