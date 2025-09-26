@@ -10,7 +10,7 @@ int main(){
 	
 	//printf("Slm Dnya\n");
 	
-	int boyut=4,topmiktari=100,maxtur=100,dagilimdegiskeni=1;//deðiþtirilebilirler
+	int boyut=3,topmiktari=1000,maxtur=1000,dagilimdegiskeni=1;//deðiþtirilebilirler
 	
 	
 	//int dagilim[maxtur+1][dagilimdegiskeni];//1 boyut stat tracker
@@ -120,7 +120,13 @@ int main(){
 					
 				}
 				else{
-					Yon[j][i]=(-1+2*(rand()%2))*(sqrt(1-eskilertoplami));
+					if(1-eskilertoplami<0.001){
+						Yon[j][i]=0;
+					}
+					else{
+						Yon[j][i]=(-1+2*(rand()%2))*(sqrt(1-eskilertoplami));
+					}
+					
 					
 					if (isfinite(Yon[j][i])==0) {
 						printf("y yoooo %f\n",Yon[j][i]);
