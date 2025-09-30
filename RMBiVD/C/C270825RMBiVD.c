@@ -10,7 +10,7 @@ int main(){
 	
 	//printf("Slm Dnya\n");
 	
-	int boyut=3,topmiktari=1000,maxtur=1000,dagilimdegiskeni=1;//deðiþtirilebilirler
+	int boyut=6,topmiktari=1000,maxtur=1000,dagilimdegiskeni=1;//deðiþtirilebilirler
 	
 	
 	//int dagilim[maxtur+1][dagilimdegiskeni];//1 boyut stat tracker

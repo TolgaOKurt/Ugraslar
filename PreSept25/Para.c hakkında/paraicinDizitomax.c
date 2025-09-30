@@ -6,33 +6,6 @@
 #include <stdbool.h>
 #define MAX_VALUE 200
 
-void QS(int arr[], int low, int high) { // internetten çalýnmýþ quicksort
-    if (low < high) {
-        int pivot = arr[(low + high) / 2]; // Selecting the middle element as the pivot
-        int i = low;
-        int j = high;
-        int temp;
-
-        while (i <= j) {
-            while (arr[i] < pivot) i++; // Moving elements smaller than pivot to the left
-            while (arr[j] > pivot) j--; // Moving elements greater than pivot to the right
-
-            if (i <= j) {
-                temp = arr[i];         // Swapping elements
-                arr[i] = arr[j];
-                arr[j] = temp;
-                i++;
-                j--;
-            }
-        }
-
-        // Recursively sort the two partitions
-        if (low < j) QS(arr, low, j);
-        if (i < high) QS(arr, i, high);
-    }
-    return;
-}
-
 
 int compare(const void *a, const void *b) {
     return (*(int *)a - *(int *)b);
