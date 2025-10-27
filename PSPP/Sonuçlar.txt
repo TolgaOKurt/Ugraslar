@@ -1,0 +1,212 @@
+objective_function(int* array, int n) {
+    int max = 0;
+    while (true) {
+        bool bulundu = false;
+        // Dizide doğrudan max + 1 var mı?
+        for (int i = 0; i < n; i++) {
+            if (array[i] == max + 1) {
+                max++;
+                bulundu = true;
+                break;
+            }
+        }
+        if (bulundu) continue;
+        // Toplam ve fark kombinasyonlarını kontrol et
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                int toplam = array[i] + array[j];
+                int fark = abs(array[i] - array[j]);
+                if (toplam == max + 1 || fark == max + 1) {
+                    max++;
+                    bulundu = true;
+                    break;
+                }
+            }
+            if (bulundu) break;
+        }
+        if (!bulundu) break;
+    }
+    return max;
+}
+
+
+
+olması gereken sonuçlar
+p=1 max=2 max/p=2
+1//
+p=2 max=6 max/p=3
+2,3//
+p=3 max=10 max/p=3-4
+2,4,5///
+3,4,5///
+
+p=4 max=16 max/p=4
+1,2,8,13///
+3,6,7,8///
+4,6,7,9///
+
+p=5 max=24 max/p=4-5
+4,8,10,11,13///
+
+p=6 max=32 max/p=5-6
+4,8,12,14,15,17///
+5,7,12,13,15,16///
+
+p=7 max=40 max/p=5-6
+2,11,13,14,18,19,21///
+2,13,14,16,17,22,23///
+4,8,12,16,18,19,21///
+5,10,15,17,18,19,21///
+5,11,13,17,19,20,40///
+6,12,15,16,17,19,20///
+7,9,15,17,19,20,40///
+
+p=8 max=52 max/p=6-7
+2,4,6,7,25,26,40,41///
+5,8,19,20,22,23,29,55///
+6,12,18,21,22,23,25,26///
+
+
+
+
+--- Random-Restart Hill Climbing Sonuçları ---
+
+MAX_RESTARTS = 10000;           
+NEIGHBORS_TO_CHECK = 10000;
+p=7 
+(Skor: 40): [ 6 12 15 16 17 19 20 ]
+
+const int MAX_RESTARTS = 1000;           // Toplam yeniden başlama sayısı
+const int NEIGHBORS_TO_CHECK = 100;
+p=8
+(Skor: 41): [ 2 3 7 11 22 28 34 38 ]
+///////////////////
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 2757000
+En Yuksek Skor (Max De­ger): 40
+Bu Skoru Veren Sirali Dizi (N=7): [ 5 10 15 17 18 19 21 ]
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 27570000
+En Yuksek Skor (Max Deg­er): 52
+Bu Skoru Veren Sirali Dizi (N=8): [ 6 12 18 21 22 23 25 26 ]
+
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 27570000
+En Yuksek Skor (Max Deg­er): 64
+Bu Skoru Veren Sirali Dizi (N=9): [ 6 12 18 24 27 28 29 31 32 ]
+
+
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 13785000
+En Yuksek Skor (Max Deg­er): 76
+Bu Skoru Veren Sirali Dizi (N=10): [ 6 12 18 24 30 33 34 35 37 38 ]
+
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 27570000
+En Yuksek Skor (Max Deger): 90
+Bu Skoru Veren Sirali Dizi (N=11): [ 8 16 24 32 36 38 41 42 43 45 47 ]
+
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 27570000
+En Yuksek Skor (Max Deger): 106
+Bu Skoru Veren Sirali Dizi (N=12): [ 8 16 24 32 40 44 46 49 50 51 53 55 ]
+
+Benzetimli Tavlama basliyor (Sirali Diziler Kisitlamasiyla)...
+Parametreler: N=13, Range=[1, 75], T_init=1000.0, Cool=0.995
+
+[Iter 2000000] Sicaklik: 605.7704, Skor: 86 (N=13): [ 6 18 21 24 29 30 39 42 46 56 59 61 73 ]
+[Iter 4000000] Sicaklik: 366.9578, Skor: 86 (N=13): [ 6 18 21 24 29 30 39 42 46 56 59 61 73 ]
+[Iter 6000000] Sicaklik: 222.2922, Skor: 86 (N=13): [ 6 18 21 24 29 30 39 42 46 56 59 61 73 ]
+[Iter 8000000] Sicaklik: 134.6580, Skor: 86 (N=13): [ 6 18 21 24 29 30 39 42 46 56 59 61 73 ]
+[Iter 10000000] Sicaklik: 81.5719, Skor: 90 (N=13): [ 7 14 24 31 33 34 36 37 39 40 45 49 63 ]
+[Iter 12000000] Sicaklik: 49.4138, Skor: 90 (N=13): [ 7 14 24 31 33 34 36 37 39 40 45 49 63 ]
+[Iter 14000000] Sicaklik: 29.9334, Skor: 90 (N=13): [ 7 14 24 31 33 34 36 37 39 40 45 49 63 ]
+[Iter 16000000] Sicaklik: 18.1328, Skor: 90 (N=13): [ 7 14 24 31 33 34 36 37 39 40 45 49 63 ]
+[Iter 18000000] Sicaklik: 10.9843, Skor: 90 (N=13): [ 7 14 24 31 33 34 36 37 39 40 45 49 63 ]
+[Iter 20000000] Sicaklik: 6.6540, Skor: 93 (N=13): [ 4 8 12 16 17 18 20 27 59 66 72 73 75 ]
+[Iter 22000000] Sicaklik: 4.0308, Skor: 97 (N=13): [ 3 9 25 31 38 39 41 43 44 48 51 58 62 ]
+[Iter 24000000] Sicaklik: 2.4417, Skor: 107 (N=13): [ 8 16 24 32 39 40 46 48 49 51 52 61 66 ]
+[Iter 26000000] Sicaklik: 1.4791, Skor: 120 (N=13): [ 9 18 27 36 44 45 49 52 55 56 57 59 60 ]
+[Iter 28000000] Sicaklik: 0.8960, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 30000000] Sicaklik: 0.5428, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 32000000] Sicaklik: 0.3288, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 34000000] Sicaklik: 0.1992, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 36000000] Sicaklik: 0.1207, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 38000000] Sicaklik: 0.0731, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 40000000] Sicaklik: 0.0443, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 42000000] Sicaklik: 0.0268, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 44000000] Sicaklik: 0.0162, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 46000000] Sicaklik: 0.0098, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 48000000] Sicaklik: 0.0060, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 50000000] Sicaklik: 0.0036, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 52000000] Sicaklik: 0.0022, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+[Iter 54000000] Sicaklik: 0.0013, Skor: 122 (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+
+--- Benzetimli Tavlama Tamamlandi ---
+Toplam Iterasyon: 55140000
+En Yuksek Skor (Max Deger): 122
+Bu Skoru Veren Sirali Dizi (N=13): [ 8 16 24 32 40 48 52 54 57 58 59 61 63 ]
+
+
+
+
+
+
+
+
+
+
+
+////////////////
+
+
+
+
+Genetik Algoritma Tamamlandi!
+En Yuksek Fitness: 39
+Bulunan En iyi Dizi (Sirali): [1, 2, 3, 12, 19, 27, 35]
+
+DİĞER ARAMALARDA DA SUB-OPTİMAL SONUÇLAR BULDU.
+
+
+Genetik Algoritma Baslatildi (Iyilestirilmis Surum)...
+Parametreler: Populasyon=3000, Dizi Uzunlu­u=7, Max De­er=50, Nesil=10000
+
+Mutasyon Orani: 0.10, Elitizm: 1, Turnuva: 2
+--------------------------------------------------
+Nesil    0 | YENI EN IYI: 27 | Dizi: [1, 2, 4, 4, 13, 16, 23]
+Nesil    1 | YENI EN IYI: 28 | Dizi: [1, 2, 9, 10, 17, 18, 23]
+Nesil   25 | YENI EN IYI: 32 | Dizi: [1, 3, 6, 8, 19, 23, 29]
+Nesil   91 | YENI EN IYI: 33 | Dizi: [1, 5, 10, 11, 15, 18, 42]
+Nesil  100 | Mevcut En Iyi: 33 (En son 9 nesil once bulundu)
+Nesil  106 | YENI EN IYI: 34 | Dizi: [1, 2, 3, 10, 16, 24, 31]
+Nesil  111 | YENI EN IYI: 36 | Dizi: [1, 2, 6, 13, 15, 23, 33]
+Nesil  200 | Mevcut En Iyi: 36 (En son 89 nesil once bulundu)
+Nesil  300 | YENI EN IYI: 37 | Dizi: [1, 2, 3, 4, 14, 23, 33]
+Nesil  400 | Mevcut En Iyi: 37 (En son 100 nesil once bulundu)
+Nesil  500 | Mevcut En Iyi: 37 (En son 200 nesil once bulundu)
+200 nesildir gelisme yok. Yerel optimuma takilmis olabilir. Durduruluyor.
+--------------------------------------------------
+Genetik Algoritma Tamamlandi!
+En Yuksek Fitness: 37
+Bulunan En Iyi Dizi (Sirali): [1, 2, 3, 4, 14, 23, 33]
+
+Genetik Algoritma Baslatildi (Iyilestirilmis Surum)...
+Parametreler: Populasyon=10000, Dizi Uzunlugu=7, Max Deger=50, Nesil=10000
+Mutasyon Orani: 0.15, Elitizm: 1, Turnuva: 2
+--------------------------------------------------
+Nesil    0 | YENI EN IYI: 32 | Dizi: [2, 6, 11, 13, 14, 16, 37]
+Nesil    4 | YENI EN IYI: 34 | Dizi: [1, 2, 10, 17, 23, 28, 31]
+Nesil   77 | YENI EN IYI: 35 | Dizi: [2, 6, 7, 9, 15, 25, 35]
+Nesil  100 | Mevcut En Iyi: 35 (En son 23 nesil once bulundu)
+Nesil  200 | Mevcut En Iyi: 35 (En son 123 nesil once bulundu)
+Nesil  277 | YENI EN IYI: 36 | Dizi: [1, 10, 11, 13, 15, 17, 18]
+Nesil  300 | Mevcut En Iyi: 36 (En son 23 nesil once bulundu)
+Nesil  400 | Mevcut En Iyi: 36 (En son 123 nesil once bulundu)
+200 nesildir gelisme yok. Yerel optimuma takilmis olabilir. Durduruluyor.
+--------------------------------------------------
+Genetik Algoritma Tamamlandi!
+En Yuksek Fitness: 36
+Bulunan En Iyi Dizi (Sirali): [1, 9, 11, 14, 15, 18, 20]
+
+
