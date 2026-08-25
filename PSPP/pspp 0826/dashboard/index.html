@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSPP Ultra Dashboard - Dinamik Bilgi Tabanı ve Çözüm Analizörü</title>
+    <meta name="description" content="PSPP (Postage Stamp Problem) dinamik bilgi tabanı, rekor çözümler, bitmask kapsama görselleştiricisi ve interaktif arama paneli.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Arka Plan Efektleri -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-group">
+                <div class="logo-icon">⚡</div>
+                <div>
+                    <h1 class="logo-title">PSPP Dinamik Bilgi Tabanı</h1>
+                    <p class="logo-subtitle">Postage Stamp Problem • 64-Bit Bitmask & DP Engine</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="stats-pill" id="totalRecordsPill">
+                    <span class="pill-dot"></span>
+                    <span id="totalRecordsText">13 Boyut Kayıtlı</span>
+                </div>
+                <button class="btn btn-secondary" id="btnExportJson">📥 JSON İndir</button>
+                <button class="btn btn-primary" id="btnOpenPlayground">🧪 Test Laboratuvarı</button>
+            </div>
+        </header>
+
+        <!-- Ana Düzen -->
+        <main class="main-grid">
+            <!-- Sol Panel: P Boyut Seçici Listesi -->
+            <aside class="sidebar-card">
+                <div class="sidebar-header">
+                    <h2>Boyutlar (P)</h2>
+                    <span class="badge badge-accent">1 - 13</span>
+                </div>
+                <div class="p-nav-list" id="pNavList">
+                    <!-- JS ile doldurulacak -->
+                </div>
+            </aside>
+
+            <!-- Orta / Sağ Panel: Seçili P Detayları & Görselleştirici -->
+            <section class="content-area">
+                <!-- Üst Özet Kartı -->
+                <div class="hero-card" id="heroCard">
+                    <div class="hero-top">
+                        <div class="hero-title-group">
+                            <span class="p-badge" id="heroPBadge">p = 7</span>
+                            <span class="status-badge" id="heroStatusBadge">Optimum (Kanıtlı)</span>
+                        </div>
+                        <div class="hero-score-group">
+                            <span class="score-label">Maksimum Kesintisiz Skor (M)</span>
+                            <div class="score-number" id="heroScore">40</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-title">Skor / P Oranı</span>
+                            <span class="metric-val" id="metricRatio">5.71</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-title">Mutlak Tavan (P²+P)</span>
+                            <span class="metric-val" id="metricCeil">56</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-title">Alternatif Çözümler</span>
+                            <span class="metric-val" id="metricSolCount">8 Adet</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-title">Kapasite Verimi</span>
+                            <span class="metric-val" id="metricEfficiency">%71.4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alternatif Çözümler Seçici -->
+                <div class="card solutions-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="icon">🧩</span>
+                            <h3>Alternatif Çözüm Havuzu</h3>
+                        </div>
+                        <div class="sol-tabs" id="solutionTabs">
+                            <!-- JS ile alternatif butonları gelecek -->
+                        </div>
+                    </div>
+
+                    <div class="solution-display">
+                        <!-- Delta Dizisi -->
+                        <div class="array-block">
+                            <div class="array-header">
+                                <span class="array-title">Delta Artış Dizisi (Δ)</span>
+                                <button class="copy-btn" id="btnCopyDelta" title="Kopyala">📋 Kopyala</button>
+                            </div>
+                            <div class="chips-container" id="deltaChips">
+                                <!-- JS ile chipler -->
+                            </div>
+                        </div>
+
+                        <!-- Normal Kümülatif Dizi -->
+                        <div class="array-block">
+                            <div class="array-header">
+                                <span class="array-title">Kümülatif Ana Dizi (P)</span>
+                                <button class="copy-btn" id="btnCopyDizi" title="Kopyala">📋 Kopyala</button>
+                            </div>
+                            <div class="chips-container" id="diziChips">
+                                <!-- JS ile chipler -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sayı Doğrusu ve Ayrıştırma / Kapsama Haritası -->
+                <div class="card coverage-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="icon">🎯</span>
+                            <h3>Sayı Kapsama Haritası & Matematiksel Ayrışım</h3>
+                        </div>
+                        <span class="help-text">Bir sayıya tıklayarak nasıl üretildiğini görün</span>
+                    </div>
+
+                    <!-- Seçili Sayı Ayrıştırma İpucu -->
+                    <div class="decomposition-box" id="decompBox">
+                        <span class="decomp-icon">🔍</span>
+                        <div class="decomp-content" id="decompText">
+                            İncelemek için aşağıdaki numaralandırılmış karelerden birine tıklayın.
+                        </div>
+                    </div>
+
+                    <!-- Renk Lejantı / Açıklaması -->
+                    <div class="coverage-legend">
+                        <div class="legend-item"><span class="legend-dot dot-natural"></span> <span>Doğal (P[i])</span></div>
+                        <div class="legend-item"><span class="legend-dot dot-sum"></span> <span>Toplam (P[i]+P[j])</span></div>
+                        <div class="legend-item"><span class="legend-dot dot-diff"></span> <span>Fark (P[j]-P[i])</span></div>
+                        <div class="legend-item"><span class="legend-dot dot-both"></span> <span>Toplam & Fark</span></div>
+                        <div class="legend-item"><span class="legend-dot dot-missing"></span> <span>İlk Eksik (M+1)</span></div>
+                    </div>
+
+                    <!-- Kapsama Grid -->
+                    <div class="coverage-grid" id="coverageGrid">
+                        <!-- JS ile sayılar 1..M+1 doldurulacak -->
+                    </div>
+                </div>
+
+                <!-- 64-Bit Donanımsal Bitmask Görselleştirici -->
+                <div class="card bitmask-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="icon">💾</span>
+                            <h3>64-Bit Register Bitmask Durumu</h3>
+                        </div>
+                        <span class="badge badge-mono">O(1) CPU CTZ Modu</span>
+                    </div>
+                    <div class="bitmask-registers" id="bitmaskRegisters">
+                        <!-- JS ile 4 register gösterilecek -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Test / Hesaplayıcı Modalı -->
+        <div class="modal-overlay" id="playgroundModal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="card-title-group">
+                        <span class="icon">🧪</span>
+                        <h3>PSPP İnteraktif Test & Hesaplama Laboratuvarı</h3>
+                    </div>
+                    <button class="modal-close" id="btnClosePlayground">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-desc">Kendi özel Delta veya Normal dizinizi girin; anında maksimum skorunu, ayrışımlarını ve bitmask haritasını hesaplayın.</p>
+                    
+                    <div class="input-form-group">
+                        <div class="input-type-tabs">
+                            <button class="tab-btn active" id="tabInputDelta">Delta Dizisi Gir</button>
+                            <button class="tab-btn" id="tabInputDizi">Normal Dizi Gir</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="text" id="customArrayInput" class="custom-input" placeholder="Örn: 2, 2, 1, 14, 1, 11, 1" value="2, 2, 1, 14, 1, 11, 1">
+                            <button class="btn btn-primary" id="btnCalculateCustom">Hesapla</button>
+                        </div>
+                    </div>
+
+                    <!-- Test Sonuç Alanı -->
+                    <div class="custom-result-card" id="customResultCard">
+                        <div class="custom-score-badge">
+                            <span class="lbl">Hesaplanan Skor (M):</span>
+                            <span class="val" id="customScoreVal">40</span>
+                        </div>
+                        <div class="custom-info" id="customInfoText">
+                            Dizi: [2, 4, 5, 19, 20, 31, 32] • Boyut: P = 7
+                        </div>
+                        <div class="custom-coverage-grid" id="customCoverageGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="app-footer">
+            <p>PSPP Arama & Analiz Çözümü • Google Antigravity IDE</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

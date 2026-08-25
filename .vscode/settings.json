@@ -1,0 +1,15 @@
+{
+    "c-cpp-compile-run.c-compiler": "C:\\TDM-GCC-64\\bin\\gcc.exe",
+    "c-cpp-compile-run.cpp-compiler": "C:\\TDM-GCC-64\\bin\\g++.exe",
+    "c-cpp-compile-run.c-flags": "-Wall -Wextra -O3 -finput-charset=UTF-8 -fexec-charset=UTF-8",
+    "c-cpp-compile-run.cpp-flags": "-Wall -Wextra -O3 -finput-charset=UTF-8 -fexec-charset=UTF-8",
+    "c-cpp-compile-run.output-location": "${workspaceFolder}",
+    "c-cpp-compile-run.run-in-external-terminal": false,
+    "c-cpp-compile-run.save-before-compile": true,
+    "code-runner.runInTerminal": true,
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.executorMap": {
+        "c": "cd \"$dir\" ; gcc \"$fileName\" -O3 -finput-charset=UTF-8 -fexec-charset=UTF-8 -o \"$fileNameWithoutExt.exe\" ; if ($?) { .\\\"$fileNameWithoutExt.exe\" }",
+        "cpp": "cd \"$dir\" ; g++ \"$fileName\" -O3 -finput-charset=UTF-8 -fexec-charset=UTF-8 -o \"$fileNameWithoutExt.exe\" ; if ($?) { .\\\"$fileNameWithoutExt.exe\" }"
+    }
+}
