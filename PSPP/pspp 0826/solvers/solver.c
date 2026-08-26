@@ -11,18 +11,18 @@
 
 /*
  * PSPP Ultra Hizli C Arama Motoru (solver.c) - TERS DFS & DINAMIK DELTA LIMITI
- * 
+ *
  * BU MOTORUN ARAMA MANTIGI:
  * -------------------------
  * 1. TERS DFS (Ilk Eleman Once Artar):
  *    Arama sagdan sola (P-1'den 0'a) dogru derinlesir.
  *    Boylece en icteki dongu delta[0]'i dondurur:
  *    [1, 1, 1, 1] -> [2, 1, 1, 1] -> [3, 1, 1, 1] ...
- * 
+ *
  * 2. KULLANICI DELTA LIMITI:
- *    Kullanici tek bir delta elemaninin cikabilecegi maksimum degeri belirleyebilir.
- *    (Girilmezse mutlak teorik tavan kullanilir).
- * 
+ *    Kullanici tek bir delta elemaninin cikabilecegi maksimum degeri
+ * belirleyebilir. (Girilmezse mutlak teorik tavan kullanilir).
+ *
  * 3. DONANIMSAL 64-BIT CTZ:
  *    Her yaprakta kesintisiz menzil O(1) donanimsal komutlarla hesaplanir.
  */
@@ -97,7 +97,8 @@ void dfs_ters(int depth, int current_sum, int teorik_tavan) {
 
   int min_required_sum = (hedef_esik + 1) / 2;
 
-  // Ileriye donuk erken budama (Kanun 1): Kalan adimlar maksimumla doldurulsa bile yetmiyorsa kes
+  // Ileriye donuk erken budama (Kanun 1): Kalan adimlar maksimumla doldurulsa
+  // bile yetmiyorsa kes
   int remaining_steps = depth + 1; // 0'a kadar kalan adim sayisi
   int max_step_limit = (user_max_delta > 0) ? user_max_delta : teorik_tavan;
   if (current_sum + remaining_steps * max_step_limit < min_required_sum) {
@@ -105,7 +106,8 @@ void dfs_ters(int depth, int current_sum, int teorik_tavan) {
     return;
   }
 
-  // Yaprak Noktasi (depth < 0): Tum delta[0]..delta[P-1] degerleri yerlestirildi!
+  // Yaprak Noktasi (depth < 0): Tum delta[0]..delta[P-1] degerleri
+  // yerlestirildi!
   if (depth < 0) {
     if (current_sum < min_required_sum) {
       stats.prune_kural1_leaf++;
@@ -121,9 +123,12 @@ void dfs_ters(int depth, int current_sum, int teorik_tavan) {
       if (sec_since_last >= 5.0) {
         g_last_log_time = now;
         double total_elapsed = (double)(now - g_start_time) / CLOCKS_PER_SEC;
-        double speed = (total_elapsed > 0) ? (stats.tested_leaves / total_elapsed / 1e6) : 0;
-        printf("  >> [Ilerleme: %lldM test | %.1fs] Hiz: %.2fM/s | Aktif Delta: [",
-               stats.tested_leaves / 1000000, total_elapsed, speed);
+        double speed = (total_elapsed > 0)
+                           ? (stats.tested_leaves / total_elapsed / 1e6)
+                           : 0;
+        printf(
+            "  >> [Ilerleme: %lldM test | %.1fs] Hiz: %.2fM/s | Aktif Delta: [",
+            stats.tested_leaves / 1000000, total_elapsed, speed);
         for (int i = 0; i < P; i++) {
           printf("%d%s", delta[i], i == P - 1 ? "" : ", ");
         }
@@ -138,7 +143,8 @@ void dfs_ters(int depth, int current_sum, int teorik_tavan) {
       if (score > best_score) {
         best_score = score;
         bool is_new = kb_update(&g_kb, P, score, delta);
-        printf("  >>> [%s: M = %d] Delta: [", is_new ? "YENI REKOR" : "EN IYI", score);
+        printf("  >>> [%s: M = %d] Delta: [", is_new ? "YENI REKOR" : "EN IYI",
+               score);
         for (int i = 0; i < P; i++)
           printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
         fflush(stdout);
@@ -156,8 +162,10 @@ void dfs_ters(int depth, int current_sum, int teorik_tavan) {
   }
 
   // Bu derinlik icin alinabilecek ust sinir
-  int max_d = (user_max_delta > 0) ? user_max_delta : (teorik_tavan - current_sum);
-  if (max_d < 1) max_d = 1;
+  int max_d =
+      (user_max_delta > 0) ? user_max_delta : (teorik_tavan - current_sum);
+  if (max_d < 1)
+    max_d = 1;
 
   for (int d = 1; d <= max_d; d++) {
     delta[depth] = d;
@@ -168,21 +176,30 @@ void dfs_ters(int depth, int current_sum, int teorik_tavan) {
 void run_solver() {
   int teorik_tavan = P * P + P;
 
-  printf("======================================================================\n");
-  printf("         PSPP ULTRA ARAMA MOTORU (TERS DFS: ILK ELEMAN ONCELIKLI)     \n");
-  printf("======================================================================\n");
+  printf("====================================================================="
+         "=\n");
+  printf("         PSPP ULTRA ARAMA MOTORU (TERS DFS: ILK ELEMAN ONCELIKLI)    "
+         " \n");
+  printf("====================================================================="
+         "=\n");
   printf("Parametreler : P = %d\n", P);
-  printf("Delta Limiti : %s\n", (user_max_delta > 0) ? "KULLANICI LIMITI AKTIF" : "SERBEST (Teorik Tavan)");
-  if (user_max_delta > 0) printf("Max Delta    : Her bir delta <= %d\n", user_max_delta);
+  printf("Delta Limiti : %s\n", (user_max_delta > 0)
+                                    ? "KULLANICI LIMITI AKTIF"
+                                    : "SERBEST (Teorik Tavan)");
+  if (user_max_delta > 0)
+    printf("Max Delta    : Her bir delta <= %d\n", user_max_delta);
   printf("Zemin Citasi : Hedef Esik >= %d\n", hedef_esik);
-  printf("Arama Sirasi : [1,1,1] -> [2,1,1] -> [3,1,1] (delta[0] once artar)\n");
+  printf(
+      "Arama Sirasi : [1,1,1] -> [2,1,1] -> [3,1,1] (delta[0] once artar)\n");
   printf("Veritabani   : pspp_database.json\n");
-  printf("----------------------------------------------------------------------\n");
+  printf("---------------------------------------------------------------------"
+         "-\n");
   if (g_kb.table[P].score > 0) {
     printf("Bilgi Tabanindaki Mevcut Kayit:\n");
     kb_print_record(&g_kb.table[P]);
   }
-  printf("======================================================================\n\n");
+  printf("====================================================================="
+         "=\n\n");
 
   g_start_time = clock();
   g_last_log_time = g_start_time;
@@ -197,22 +214,29 @@ void run_solver() {
   clock_t end = clock();
   double cpu_time = ((double)(end - g_start_time)) / CLOCKS_PER_SEC;
 
-  printf("\n======================================================================\n");
-  printf("                     ARAMA VE BUDAMA ISTATISTIKLERI                   \n");
-  printf("======================================================================\n");
+  printf("\n==================================================================="
+         "===\n");
+  printf("                     ARAMA VE BUDAMA ISTATISTIKLERI                  "
+         " \n");
+  printf("====================================================================="
+         "=\n");
   printf("Toplam Dugum Ziyareti (DFS Calls) : %lld\n", stats.total_nodes);
   printf("Test Edilen Yaprak (Kombinasyon)  : %lld\n", stats.tested_leaves);
   printf("En Yuksek Skor                    : M = %d\n", best_score);
-  printf("Bulunan Cozum Sayisi              : %d\n", g_kb.table[P].solutions_count);
+  printf("Bulunan Cozum Sayisi              : %d\n",
+         g_kb.table[P].solutions_count);
   printf("Gecen Toplam Sure                 : %.4f saniye\n", cpu_time);
   if (cpu_time > 0) {
     printf("Ortalama Arama Hizi               : %.2f Milyon test/sn\n",
            (stats.tested_leaves / 1000000.0) / cpu_time);
   }
-  printf("----------------------------------------------------------------------\n");
+  printf("---------------------------------------------------------------------"
+         "-\n");
   printf("[BUDAMA ETKINLIK RAPORU]\n");
-  printf(" - Kural 1 (Yetersiz Toplam Dal Budamasi) : %lld dal elendi\n", stats.prune_kural1_leaf);
-  printf("======================================================================\n");
+  printf(" - Kural 1 (Yetersiz Toplam Dal Budamasi) : %lld dal elendi\n",
+         stats.prune_kural1_leaf);
+  printf("====================================================================="
+         "=\n");
 
   if (g_kb.table[P].score > 0) {
     printf("\n[Guncellenmis DP Tablo Kaydi - Diske Yazildi]:\n");
@@ -223,23 +247,30 @@ void run_solver() {
 
 void interactive_mode() {
   char buf[64];
-  printf("======================================================================\n");
-  printf("         PSPP ULTRA ARAMA MOTORU (INTERAKTIF MOD - TERS DFS)          \n");
-  printf("======================================================================\n\n");
+  printf("====================================================================="
+         "=\n");
+  printf("         PSPP ULTRA ARAMA MOTORU (INTERAKTIF MOD - TERS DFS)         "
+         " \n");
+  printf("====================================================================="
+         "=\n\n");
 
   printf("Hedef Boyut P (Eleman Sayisi) [Varsayilan: 8]: ");
   if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
     int val = atoi(buf);
-    if (val >= 1 && val < MAX_P) P = val;
+    if (val >= 1 && val < MAX_P)
+      P = val;
   } else {
     P = 8;
   }
 
-  printf("Maksimum Delta Limiti (Tek bir delta elemaninin max degeri, bos=Serbest): ");
+  printf("Maksimum Delta Limiti (Tek bir delta elemaninin max degeri, "
+         "bos=Serbest): ");
   if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
     int val = atoi(buf);
-    if (val > 0) user_max_delta = val;
-    else user_max_delta = 0;
+    if (val > 0)
+      user_max_delta = val;
+    else
+      user_max_delta = 0;
   } else {
     user_max_delta = 0; // Serbest
   }
@@ -248,8 +279,10 @@ void interactive_mode() {
   printf("Hedef Esik / Zemin Citasi [Varsayilan: %d]: ", bilinen_max);
   if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
     int val = atoi(buf);
-    if (val >= 0) hedef_esik = val;
-    else hedef_esik = bilinen_max;
+    if (val >= 0)
+      hedef_esik = val;
+    else
+      hedef_esik = bilinen_max;
   } else {
     hedef_esik = bilinen_max;
   }
@@ -272,7 +305,8 @@ int main(int argc, char **argv) {
   }
 
   // 2. Argumanlari Ayristir
-  if (argc > 1) P = atoi(argv[1]);
+  if (argc > 1)
+    P = atoi(argv[1]);
 
   for (int i = 2; i < argc; i++) {
     if (strcmp(argv[i], "--max-delta") == 0 && i + 1 < argc) {
