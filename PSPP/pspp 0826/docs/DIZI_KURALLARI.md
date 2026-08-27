@@ -37,14 +37,72 @@ Bu kurallar matematiksel kesinlik taşır. Bu kurallara uymayan hiçbir dizi hed
 
 > **Teorem:**
 > 1'den M'ye kadar kesintisiz bir menzil oluşması için, en küçük pozitif tam sayı olan `1`'in küme tarafından mutlaka üretilmesi şarttır.
-> Bu ancak şu iki durumdan biriyle mümkündür:
-> 1. `1` sayısı doğrudan kümenin içinde bulunmalıdır (`1 ∈ P`).
-> 2. Kümede farkı `1` olan en az iki eleman bulunmalıdır (`p_j - p_i = 1`).
+> Bu ancak dizide en az bir `1` elemanı bulunmasıyla (`∃k: delta[k] = 1`) mümkündür.
+> (Çünkü tüm `delta[k] >= 2` olduğunda tüm tekiller >= 2, tüm toplamlar >= 4 ve tüm farklar >= 2 olur).
 
 - **Parite İspatı:**  
   Eğer bir dizideki tüm elemanlar çift sayı ise; iki çift sayının toplamı da farkı da daima çift sayıdır. Dolayısıyla tek bir sayı bile (en başta `1`) üretilemez ve skor `M = 0` olur.
 - **Kesin Budama Kuralı:**  
-  Dizinin elemanlarının tamamı çift olamaz; en az bir tek sayı veya ardışık eleman çifti barındırmak zorundadır.
+  Dizinin elemanlarının tamamı çift olamaz; dizide en az bir tane `delta[k] = 1` bulunmak zorundadır.
+
+---
+
+### Kanun 2b: 2 Sayısının Üretilmesi Kanunu
+
+> **Teorem:**
+> 1'den M'ye kadar kesintisiz bir menzil için `2` sayısının da mutlaka üretilmesi şarttır.
+> PSPP işlem uzayında (`p_i`, `p_i + p_j`, `p_j - p_i`) $2$ sayısının oluşabilmesi için aşağıdaki **3 durumdan en az birinin** sağlanması zorunludur:
+> 1. `delta[0] = 1` (yani `p_0 = 1` olup `p_0 + p_0 = 1 + 1 = 2` toplamı ile),
+> 2. Dizide herhangi bir yerde `delta[k] = 2` bulunması (`p_0 = 2` veya `p_k - p_{k-1} = 2` farkı ile),
+> 3. Dizide yan yana iki adet `1` bulunması (`[..., 1, 1, ...]` olup `p_{k+1} - p_{k-1} = 1 + 1 = 2` farkı ile).
+
+- **Matematiksel İspat:**  
+  Eğer `delta[0] != 1`, dizide hiç `2` yok ve peş peşe `[1, 1]` yoksa:
+  - Tekiller: `p_0 >= 2`, diğer `p_i >= 3` olur (`p_i = 2` olamaz).
+  - Toplamlar: En küçük toplam `p_0 + p_0 >= 2 + 2 = 4 > 2` olur (`sum = 2` olamaz).
+  - Farklar: Tüm tekil adımlar `delta >= 3` veya izole `1`'ler olduğundan hiçbir alt aralık toplamı $2$ yapamaz.
+  - Dolayısıyla $2$ sayısı üretilemez ve skor **$M \le 1$** ile sınırlı kalır.
+- **Kesin Budama Kuralı:**  
+  Ters DFS sırasında `depth == 0`'a gelindiğinde dizide `2` veya `[1, 1]` yoksa, ilk eleman **yalnızca $\delta_0 = 1$ veya $\delta_0 = 2$** olabilir; $\delta_0 \ge 3$ olan tüm dallar anında budanır.
+
+---
+
+### Kanun 2c: p0 - 1 Sayısının Üretilmesi Kanunu (p0 >= 4 İçin)
+
+> **Teorem:**
+> Dizinin en küçük elemanı $p_0 = \delta_0 \ge 4$ olduğunda, $(p_0 - 1 \ge 3)$ sayısının üretilebilmesi için dizide **farkı $p_0 - 1$ olan en az iki eleman ($p_j - p_i = p_0 - 1$) bulunması zorunludur.**
+> Başka bir deyişle, $\delta_1, \dots, \delta_{P-1}$ kuyruk elemanlarının ardışık alt toplamlarından en az biri $p_0 - 1$ değerine eşit olmak zorundadır.
+
+- **Matematiksel İspat:**  
+  - **Tekiller:** Tüm $p_i \ge p_0 > p_0 - 1$ olduğundan hiçbir tekil pul $p_0 - 1$ olamaz.
+  - **Toplamlar:** En küçük toplam $p_0 + p_0 = 2p_0 > p_0 - 1$ olduğundan hiçbir toplam $p_0 - 1$ olamaz.
+  - **Farklar:** Dolayısıyla $(p_0 - 1)$ sayısı YALNIZCA iki pulun farkından ($p_j - p_i = \sum_{k=i+1}^j \delta_k$) gelebilir.
+  - Eğer $\delta_1 \dots \delta_{P-1}$ farkları arasında $p_0 - 1$ yoksa, $p_0 - 1$ sayısı kesinlikle üretilemez ve zincir o noktada koparak **$M \le p_0 - 2$** alır (optimum olamaz).
+- **Kesin Budama Kuralı:**  
+  Ters DFS'te `depth == 0`'a gelindiğinde, `delta[1]..delta[P-1]` elemanlarının ürettiği tüm farklar bir bitmask (`diff_mask`) içine alınır. `d >= 4` için eğer `(d - 1)` bu maskede yoksa, o `d` seçeneği alt ağaca inilmeden **O(1)'de anında budanır.** (`p0 - 1 = 1` ve `p0 - 1 = 2` durumları zaten Kanun 2 ve Kanun 2b tarafından denetlendiği için bu kural `p0 >= 4` için çalışır).
+
+---
+
+### Kanun 2d: 3 Sayısının Üretilmesi Kanunu
+
+> **Teorem:**
+> 1'den M'ye kadar kesintisiz bir menzil için `3` sayısının da mutlaka üretilmesi şarttır.
+> PSPP işlem uzayında (`p_i`, `p_i + p_j`, `p_j - p_i`) 3 sayısının oluşabilmesi için aşağıdaki **4 durumdan en az birinin** sağlanması zorunludur:
+> 1. Dizide herhangi bir yerde `delta[k] = 3` bulunması (`p0 = 3` veya tekil fark `3` ile),
+> 2. Dizide herhangi bir yerde yan yana `[1, 2]` veya `[2, 1]` çifti bulunması (`1 + 2 = 3` farkı ile),
+> 3. Dizide herhangi bir yerde peş peşe üç adet `1` bulunması (`[..., 1, 1, 1, ...]` olup `1 + 1 + 1 = 3` farkı ile),
+> 4. Dizinin en başında iki adet `1` bulunması (`delta[0] = 1` ve `delta[1] = 1` olup `p0 + p1 = 1 + 2 = 3` toplamı ile).
+
+- **Matematiksel İspat:**  
+  3 sayısı pozitif tamsayılar kümesinde yalnızca `3`, `1 + 2` ve `1 + 1 + 1` olarak parçalanabilir.
+  Eğer kuyrukta (`delta[1]..delta[P-1]`) `3`, `[1, 2]`, `[2, 1]` ve `[1, 1, 1]` yoksa:
+  - `delta[0] = 3` seçilirse durum 1 sağlanır (geçerli).
+  - `delta[0] = 2` seçilirse sadece `delta[1] = 1` ise `[2, 1]` oluşur (şartlı). `delta[1] != 1` ise 3 üretilemez!
+  - `delta[0] = 1` seçilirse sadece `delta[1] = 2` (`[1, 2]`) veya `delta[1] = 1` (`1+2=3` toplamı) ise geçerlidir. `delta[1] >= 3` ise 3 üretilemez!
+  - `delta[0] >= 4` ise tekil, toplam veya farktan 3 gelmesi imkansızdır.
+  - Dolayısıyla bu şartları sağlamayan adaylarda 3 sayısı asla üretilemez ve skor **M <= 2** ile sınırlı kalır.
+- **Kesin Budama Kuralı:**  
+  Ters DFS sırasında `depth == 0`'a gelindiğinde kuyrukta 3 üretimi yoksa, `max_d = 3` sınırına çekilerek `d >= 4` olan tüm dallar ve geçersiz `d = 1, 2` durumları anında budanır.
 
 ---
 
@@ -113,6 +171,9 @@ Bu kurallar evrensel birer matematiksel kanun **değildir**. Milyarlarca kombina
 | :--- | :---: | :---: | :---: | :--- |
 | **M <= 2 * P_son (Tepe Kapanış)** | **Kesin Kanun** | EVET | **ASLA KAÇIRMAZ** | Bütün Solver'lar (Evrensel) |
 | **1'in Üretimi & Parite Kuralı** | **Kesin Kanun** | EVET | **ASLA KAÇIRMAZ** | Bütün Solver'lar (Evrensel) |
+| **2'nin Üretilmesi Kanunu (Kanun 2b)** | **Kesin Kanun** | EVET | **ASLA KAÇIRMAZ** | Bütün Solver'lar (Evrensel) |
+| **p0 - 1 Üretimi Kanunu (Kanun 2c)** | **Kesin Kanun** | EVET | **ASLA KAÇIRMAZ** | Bütün Solver'lar (Evrensel) |
+| **3'ün Üretilmesi Kanunu (Kanun 2d)** | **Kesin Kanun** | EVET | **ASLA KAÇIRMAZ** | Bütün Solver'lar (Evrensel) |
 | **P_son <= P*(P+1) (Teorik Tavan)**| **Kesin Kanun** | EVET | **ASLA KAÇIRMAZ** | Bütün Solver'lar (Evrensel) |
 | **Kuyruk Daralma Kuralı** | **Sezgisel Kısıt**| HAYIR | **Kaçırabilir (Aile 3'ü eler)** | Sadece Modüler Taban Motorları |
 | **Gövde Tekrarı Kısıtı** | **Sezgisel Kısıt**| HAYIR | **Kaçırabilir (Asimetriyi eler)**| Sadece Taban Arama Motorları |

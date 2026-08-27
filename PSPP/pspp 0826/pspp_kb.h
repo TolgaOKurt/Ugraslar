@@ -67,6 +67,26 @@ typedef struct {
     int max_p;
 } PSPP_KnowledgeBase;
 
+enum KB_UpdateResult {
+    KB_ALREADY_EXISTS = 0,    // Zaten veritabanında mevcut
+    KB_NEW_RECORD = 1,        // Yeni bir zirve skor
+    KB_NEW_ALTERNATIVE = 2    // Aynı skorda yeni bir keşif
+};
+
+/*
+ * Dahili Yardımcı: Çözümün daha önce kaydedilip edilmediğini kontrol eder
+ * Bulursa indeksini (0-based) döner, bulamazsa -1 döner.
+ */
+static inline int kb_find_solution_index(const SolutionRecord* rec, const int* delta_arr, int p) {
+    if (!rec) return -1;
+    for (int s = 0; s < rec->stored_solutions_count; s++) {
+        if (memcmp(rec->solutions[s].delta, delta_arr, p * sizeof(int)) == 0) {
+            return s;
+        }
+    }
+    return -1;
+}
+
 /*
  * Dahili Yardımcı: Bir boyuta yeni bir alternatif çözüm ekler
  */
@@ -80,27 +100,28 @@ static inline void kb_add_solution(PSPP_KnowledgeBase* kb, int p, int score, con
         rec->score = score;
         rec->is_optimal = is_optimal;
         rec->solutions_count = 1;
-        rec->stored_solutions_count = 0;
-    } else if (score == rec->score) {
-        rec->solutions_count++;
-    } else {
-        return; // Düşük skor eklenmez
-    }
-    
-    if (rec->stored_solutions_count < MAX_SOLUTIONS) {
-        for (int s = 0; s < rec->stored_solutions_count; s++) {
-            if (memcmp(rec->solutions[s].delta, delta_arr, p * sizeof(int)) == 0) {
-                return; // Zaten kayıtlı
-            }
-        }
-        DeltaSequence* seq = &rec->solutions[rec->stored_solutions_count];
+        rec->stored_solutions_count = 1;
         int sum = 0;
         for (int i = 0; i < p; i++) {
-            seq->delta[i] = delta_arr[i];
+            rec->solutions[0].delta[i] = delta_arr[i];
             sum += delta_arr[i];
-            seq->dizi[i] = sum;
+            rec->solutions[0].dizi[i] = sum;
         }
-        rec->stored_solutions_count++;
+    } else if (score == rec->score) {
+        if (kb_find_solution_index(rec, delta_arr, p) >= 0) {
+            return; // Zaten kayıtlı!
+        }
+        if (rec->stored_solutions_count < MAX_SOLUTIONS) {
+            DeltaSequence* seq = &rec->solutions[rec->stored_solutions_count];
+            int sum = 0;
+            for (int i = 0; i < p; i++) {
+                seq->delta[i] = delta_arr[i];
+                sum += delta_arr[i];
+                seq->dizi[i] = sum;
+            }
+            rec->stored_solutions_count++;
+            rec->solutions_count = rec->stored_solutions_count;
+        }
     }
 }
 
@@ -234,20 +255,26 @@ static inline void kb_init(PSPP_KnowledgeBase* kb) {
 
 /*
  * Bir boyuta yeni bir çözüm önerildiğinde güncelleme yapar (yeni rekor veya alternatif)
+ * Dönüş Değeri:
+ *   KB_NEW_RECORD (1)      : Yeni zirve rekor
+ *   KB_NEW_ALTERNATIVE (2) : Zirve skora eşit yeni alternatif keşif
+ *   KB_ALREADY_EXISTS (0)  : Veritabanında zaten kayıtlı olan çözüm
  */
-static inline bool kb_update(PSPP_KnowledgeBase* kb, int p, int score, const int* delta_arr) {
-    if (p <= 0 || p >= MAX_P) return false;
+static inline int kb_update(PSPP_KnowledgeBase* kb, int p, int score, const int* delta_arr) {
+    if (p <= 0 || p >= MAX_P) return KB_ALREADY_EXISTS;
     
     SolutionRecord* rec = &kb->table[p];
     if (score > rec->score || rec->score == 0) {
         kb_add_solution(kb, p, score, delta_arr, false);
-        return true; // Yeni rekor
+        return KB_NEW_RECORD;
     } else if (score == rec->score) {
-        int old_count = rec->stored_solutions_count;
+        if (kb_find_solution_index(rec, delta_arr, p) >= 0) {
+            return KB_ALREADY_EXISTS;
+        }
         kb_add_solution(kb, p, score, delta_arr, false);
-        return (rec->stored_solutions_count > old_count); // Yeni alternatif
+        return KB_NEW_ALTERNATIVE;
     }
-    return false;
+    return KB_ALREADY_EXISTS;
 }
 
 /*

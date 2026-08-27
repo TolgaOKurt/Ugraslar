@@ -2,32 +2,31 @@
  * PSPP Moduler Hizli Arama Motoru (fast_modular_solver.c)
  *
  * Bu program, Aile 1 (Siki Moduler Zincir) yapisini kullanarak istenen herhangi
- * bir P degeri icin en yuksek skorlu dizileri saniyeler icinde bulur ve
- * dogrudan ekrana basar.
- *
- * Derleme:
- *   gcc -O3 -finput-charset=UTF-8 -fexec-charset=UTF-8 fast_modular_solver.c -o
- * fast_modular_solver.exe
- *
- * Calistirma:
- *   .\fast_modular_solver.exe 17
+ * bir P degeri icin en yuksek skorlu dizileri saniyeler icinde bulur, dogrular
+ * ve kalici olarak pspp_database.json veritabanina kaydeder.
  */
+
+#if __has_include("pspp_kb.h")
+#include "pspp_kb.h"
+#else
+#include "../pspp_kb.h"
+#endif
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
-#define MAX_P 64
-
-int P = 12;
+int P = 11;
 int best_score = 0;
 int delta[MAX_P];
 long long total_tested = 0;
 clock_t start_time;
+PSPP_KnowledgeBase g_kb;
 
-#define BITMASK_WORDS 32 // 2048 Bit Kapasite (M=2048'e kadar)
+#define BITMASK_WORDS 32 // 2048 Bit Kapasite
 
 // Donanimsal 64-Bit CTZ Skor Hesaplayici
 static inline int calculate_score(const int *d, int n) {
@@ -102,30 +101,39 @@ void search_modular(int depth, int current_sum, int target_sum, int base_step) {
 
         int score = calculate_score(delta, P);
 
-        if (score > best_score) {
-          best_score = score;
+        if (score >= best_score && score > 0) {
+          if (score > best_score) {
+            best_score = score;
+          }
+          
+          int res = kb_update(&g_kb, P, score, delta);
+          int sol_idx = kb_find_solution_index(&g_kb.table[P], delta, P);
           clock_t cur_time = clock();
           double elapsed = ((double)(cur_time - start_time)) / CLOCKS_PER_SEC;
-          printf("  >>> [YENI REKOR: %d] Sure: %.3fs | Delta: [", score,
-                 elapsed);
-          for (int i = 0; i < P; i++)
-            printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
 
-          // Normal diziyi de hesapla ve yaz
-          printf("      Prefix Dizi: [");
-          int s = 0;
-          for (int i = 0; i < P; i++) {
-            s += delta[i];
-            printf("%d%s", s, i == P - 1 ? "]\n" : ", ");
+          if (res == KB_NEW_RECORD) {
+            printf("  >>> [YENI REKOR: M = %d] (Sure: %.3fs) Delta: [", score, elapsed);
+            for (int i = 0; i < P; i++)
+              printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
+
+            printf("      Prefix Dizi : [");
+            int s = 0;
+            for (int i = 0; i < P; i++) {
+              s += delta[i];
+              printf("%d%s", s, i == P - 1 ? "]\n" : ", ");
+            }
+            printf("      Dizi Toplami: %d | M / Toplam Orani: %.2f\n\n",
+                   final_sum, (double)score / final_sum);
+            fflush(stdout);
+          } else if (res == KB_NEW_ALTERNATIVE) {
+            printf("  >>> [YENI KESIF (Alternatif #%d): M = %d] (Sure: %.3fs) Delta: [",
+                   g_kb.table[P].stored_solutions_count, score, elapsed);
+            for (int i = 0; i < P; i++)
+              printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
+            fflush(stdout);
+          } else if (res == KB_ALREADY_EXISTS) {
+            // Ayni tarama icinde tekrar edenleri sessizce gec
           }
-          printf("      Dizi Toplami: %d | M / Toplam Orani: %.2f\n\n",
-                 final_sum, (double)score / final_sum);
-          fflush(stdout);
-        } else if (score == best_score && score > 0) {
-          printf("  -> [AYNI REKORDA ALTERNATIF: %d] Delta: [", score);
-          for (int i = 0; i < P; i++)
-            printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
-          fflush(stdout);
         }
       }
     }
@@ -133,12 +141,9 @@ void search_modular(int depth, int current_sum, int target_sum, int base_step) {
   }
 
   // Bolgesel Budama Kurali:
-  // Kuyruk boyutu: Kucuk P'lerde son 4-5 adim, buyuk P'lerde son 6-7 adimdir
   int tail_len = (P <= 6) ? 3 : ((P <= 8) ? 5 : ((P <= 12) ? 6 : 7));
   int max_tail_val = (base_step <= 8) ? 4 : (base_step / 2);
 
-  // Govde Bolgesi (depth < P - tail_len): d <= base_step
-  // Kuyruk Bolgesi (depth >= P - tail_len): d <= max_tail_val
   int max_d = (depth >= P - tail_len) ? max_tail_val : base_step;
 
   for (int d = max_d; d >= 1; d--) {
@@ -147,34 +152,30 @@ void search_modular(int depth, int current_sum, int target_sum, int base_step) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  if (argc > 1)
-    P = atoi(argv[1]);
-
-  // Dinamik Taban Adimi Hesabi (P olceklendirmesi)
+void run_modular_search() {
   int optimal_base =
       (P <= 6) ? 4 : ((P <= 10) ? 6 : ((P <= 20) ? 8 : ((((P / 2) / 2) * 2))));
   int min_base = (optimal_base > 6) ? 6 : 4;
-
-  // Dinamik Hedef Toplam Formulu: Expected P_son = M/2 ~ P*(P+1)/3
   int expected_target = (P <= 6) ? 16 : ((P * (P + 1)) / 3);
 
-  printf("====================================================================="
-         "=\n");
-  printf("         PSPP TAM DINAMIK MODULER ARAMA MOTORU                       "
-         " \n");
-  printf("====================================================================="
-         "=\n");
+  printf("=====================================================================\n");
+  printf("         PSPP TAM DINAMIK MODULER ARAMA MOTORU                       \n");
+  printf("=====================================================================\n");
   printf("Parametreler : P = %d\n", P);
   printf("Dinamik Kural: Hedef Taban = %d (Aralik: %d .. %d)\n", optimal_base,
          min_base, optimal_base);
   printf("               Hedef Toplam = ~%d [P*(P+1)/3]\n", expected_target);
-  printf("====================================================================="
-         "=\n\n");
+  printf("Veritabani   : %s\n", DB_FILE);
+  printf("---------------------------------------------------------------------\n");
+  if (g_kb.table[P].score > 0) {
+    printf("Bilgi Tabanindaki Mevcut Kayit:\n");
+    kb_print_record(&g_kb.table[P]);
+    best_score = g_kb.table[P].score;
+  }
+  printf("=====================================================================\n\n");
 
   start_time = clock();
 
-  // Dinamik hedef toplam araliginda tarama
   int sweep_range = (P <= 10) ? 4 : (P <= 20 ? 6 : (P / 3));
 
   for (int t_offset = -sweep_range; t_offset <= sweep_range; t_offset += 2) {
@@ -189,14 +190,58 @@ int main(int argc, char *argv[]) {
   }
 
   double total_time = ((double)(clock() - start_time)) / CLOCKS_PER_SEC;
-  printf("\n==================================================================="
-         "===\n");
-  printf("ARAMA TAMAMLANDI!\n");
-  printf("En Yuksek Skor : %d\n", best_score);
-  printf("Toplam Sure    : %.4f saniye\n", total_time);
-  printf("Test Edilen    : %lld kombinasyon\n", total_tested);
-  printf("====================================================================="
-         "=\n");
+  printf("\n=====================================================================\n");
+  printf("                        ARAMA RAPORU                                 \n");
+  printf("=====================================================================\n");
+  printf("En Yuksek Skor       : M = %d\n", best_score);
+  printf("Bulunan Cozum Sayisi : %d\n", g_kb.table[P].solutions_count);
+  printf("Toplam Sure          : %.4f saniye\n", total_time);
+  printf("Test Edilen Yaprak   : %lld kombinasyon\n", total_tested);
+  if (total_time > 0) {
+    printf("Arama Hizi           : %.2f Milyon test/sn\n",
+           (total_tested / 1000000.0) / total_time);
+  }
+  printf("=====================================================================\n");
 
+  if (g_kb.table[P].score > 0) {
+    printf("\n[Guncellenmis DP Tablo Kaydi - pspp_database.json Kaydedildi]:\n");
+    kb_print_record(&g_kb.table[P]);
+    kb_save_json(&g_kb, DB_FILE);
+  }
+}
+
+void interactive_mode() {
+  char buf[64];
+  printf("=====================================================================\n");
+  printf("      PSPP DINAMIK MODULER ARAMA MOTORU (INTERAKTIF MOD)             \n");
+  printf("=====================================================================\n\n");
+
+  printf("Hedef Boyut P (Eleman Sayisi) [Varsayilan: 11]: ");
+  if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
+    int val = atoi(buf);
+    if (val >= 3 && val < MAX_P) P = val;
+  } else {
+    P = 11;
+  }
+
+  printf("\n");
+  run_modular_search();
+
+  printf("\nCikis yapmak icin Enter tusuna basin...");
+  getchar();
+}
+
+int main(int argc, char *argv[]) {
+  kb_init(&g_kb);
+
+  if (argc == 1) {
+    interactive_mode();
+    return 0;
+  }
+
+  if (argc > 1)
+    P = atoi(argv[1]);
+
+  run_modular_search();
   return 0;
 }

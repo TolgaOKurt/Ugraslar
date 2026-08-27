@@ -24,7 +24,7 @@
  *   4. Tek Kopru Butcesi: delta > P olan adim sayisi <= 1
  */
 
-int P = 12;
+int P = 5;
 int bilinen_max = 0;
 int hedef_esik = 0;
 int best_score = 0;
@@ -121,25 +121,27 @@ void process_leaf(int family_id) {
 
   int score = deltatomax_c(delta, P);
 
-  // Eger yeni bir en yuksek skor bulunursa veya mevcut rekor ile ayni skorda
-  // alternatif bulunursa
-  if (score > best_score || (score == best_score && score > 0)) {
+  if (score >= hedef_esik && score > 0) {
     if (score > best_score) {
       best_score = score;
-      bool is_new = kb_update(&g_kb, P, score, delta);
-      printf("  >>> [AILE %d - %s: %d] Delta: [", family_id,
-             is_new ? "YENI REKOR" : "EN IYI", score);
-      for (int i = 0; i < P; i++)
-        printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
+      if (score > bilinen_max) bilinen_max = score;
+    }
+    int res = kb_update(&g_kb, P, score, delta);
+    int sol_idx = kb_find_solution_index(&g_kb.table[P], delta, P);
+
+    if (res == KB_NEW_RECORD) {
+      printf("  >>> [AILE %d - YENI REKOR: M = %d] Delta: [", family_id, score);
+      for (int i = 0; i < P; i++) printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
       fflush(stdout);
-      if (score > bilinen_max)
-        bilinen_max = score;
-    } else if (score == best_score && score > 0) {
-      kb_update(&g_kb, P, score, delta);
-      printf("  -> [Aile %d] Cozum #%d: [", family_id,
-             g_kb.table[P].solutions_count);
-      for (int i = 0; i < P; i++)
-        printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
+    } else if (res == KB_NEW_ALTERNATIVE) {
+      printf("  >>> [AILE %d - YENI KESIF (Alternatif #%d): M = %d] Delta: [",
+             family_id, g_kb.table[P].stored_solutions_count, score);
+      for (int i = 0; i < P; i++) printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
+      fflush(stdout);
+    } else if (res == KB_ALREADY_EXISTS) {
+      printf("  -> [AILE %d - DB'DE MEVCUT #%d: M = %d] Delta: [",
+             family_id, sol_idx >= 0 ? (sol_idx + 1) : 1, score);
+      for (int i = 0; i < P; i++) printf("%d%s", delta[i], i == P - 1 ? "]\n" : ", ");
       fflush(stdout);
     }
   }
@@ -247,77 +249,63 @@ void search_family_3(int depth, int current_sum, int tail_val) {
   }
 }
 
+bool ENABLE_FAMILY_1 = true;
+
 // ============================================================================
 // ANA PROGRAM VE 3-AILE YURUTUCUSU
 // ============================================================================
-int main(int argc, char **argv) {
-  kb_init(&g_kb);
-
-  if (argc > 1)
-    P = atoi(argv[1]);
-  if (argc > 2)
-    bilinen_max = atoi(argv[2]);
-  else
-    bilinen_max = kb_get_target_max(&g_kb, P);
-  if (argc > 3)
-    ENABLE_FAMILY_2 = (atoi(argv[3]) != 0);
-  if (argc > 4)
-    ENABLE_FAMILY_3 = (atoi(argv[4]) != 0);
+void run_family_solver() {
   hedef_esik = bilinen_max;
 
-  printf("====================================================================="
-         "=\n");
-  printf("         PSPP MORFOLOJIK 3-AILE BAZLI AKILLI ARAMA MOTORU            "
-         "\n");
-  printf("====================================================================="
-         "=\n");
-  printf("Parametreler : P=%d, Hedef Esik >= %d\n", P, bilinen_max);
-  printf("Arama Modu   : Aile 1 [AKTIF] | Aile 2 [%s] | Aile 3 [%s]\n",
+  printf("=====================================================================\n");
+  printf("         PSPP MORFOLOJIK 3-AILE BAZLI AKILLI ARAMA MOTORU            \n");
+  printf("=====================================================================\n");
+  printf("Parametreler : P = %d, Hedef Esik >= %d\n", P, bilinen_max);
+  printf("Arama Modu   : Aile 1 [%s] | Aile 2 [%s] | Aile 3 [%s]\n",
+         ENABLE_FAMILY_1 ? "AKTIF" : "KAPALI",
          ENABLE_FAMILY_2 ? "AKTIF" : "KAPALI",
          ENABLE_FAMILY_3 ? "AKTIF" : "KAPALI");
-  printf("Veritabani   : %s (Kalici Otomatik Depolama)\n", DB_FILE);
-  printf("---------------------------------------------------------------------"
-         "-\n");
+  printf("Veritabani   : %s\n", DB_FILE);
+  printf("---------------------------------------------------------------------\n");
   if (g_kb.table[P].score > 0) {
     printf("Bilgi Tabanindaki Mevcut Kayit:\n");
     kb_print_record(&g_kb.table[P]);
   }
-  printf("====================================================================="
-         "=\n\n");
+  printf("=====================================================================\n\n");
 
   clock_t start_all = clock();
   g_start_time = start_all;
-
-  // --------------------------------------------------------------------------
-  // ASAMA 1: AILE 1 (SIKI MODULER ZINCIR) ARAMASI (DEFAULT AKTIF)
-  // --------------------------------------------------------------------------
-  printf(">>> [FAZ 1/3]: Aile 1 (Siki Moduler Aritmetik) Aramasi "
-         "Baslatiliyor...\n");
-  clock_t f1_start = clock();
   int min_target_sum = (hedef_esik > 0) ? ((hedef_esik + 1) / 2) : 1;
-  int max_f1_d0 = (P > 12) ? 12 : P;
-
-  // Hedef toplami alt esikten baslatip yukari dogru tara
-  for (int cur_target = min_target_sum; cur_target <= min_target_sum + 16;
-       cur_target += 2) {
-    if (cur_target <= 0)
-      continue;
-    for (int d0 = max_f1_d0; d0 >= 2; d0 -= (d0 >= 6 ? 2 : 1)) {
-      delta[0] = d0;
-      search_family_1(1, d0, cur_target);
-    }
-  }
-  double f1_time = ((double)(clock() - f1_start)) / CLOCKS_PER_SEC;
-  printf(
-      "    [Faz 1 Tamamlandi]: Sure: %.4fs | Dugum: %lld | En Iyi Skor: %d\n\n",
-      f1_time, stats_f1.total_nodes, best_score);
 
   // --------------------------------------------------------------------------
-  // ASAMA 2: AILE 2 (CIFT KUMELI KOPRU) ARAMASI (OPSIYONEL)
+  // ASAMA 1: AILE 1 (SIKI MODULER ZINCIR) ARAMASI
+  // --------------------------------------------------------------------------
+  if (ENABLE_FAMILY_1) {
+    printf(">>> [FAZ 1/3]: Aile 1 (Siki Moduler Aritmetik) Aramasi Baslatiliyor...\n");
+    clock_t f1_start = clock();
+    int max_f1_d0 = (P > 12) ? 12 : P;
+
+    for (int cur_target = min_target_sum; cur_target <= min_target_sum + 16;
+         cur_target += 2) {
+      if (cur_target <= 0)
+        continue;
+      for (int d0 = max_f1_d0; d0 >= 2; d0 -= (d0 >= 6 ? 2 : 1)) {
+        delta[0] = d0;
+        search_family_1(1, d0, cur_target);
+      }
+    }
+    double f1_time = ((double)(clock() - f1_start)) / CLOCKS_PER_SEC;
+    printf("    [Faz 1 Tamamlandi]: Sure: %.4fs | Dugum: %lld | En Iyi Skor: %d\n\n",
+           f1_time, stats_f1.total_nodes, best_score);
+  } else {
+    printf(">>> [FAZ 1/3]: Aile 1 (Siki Moduler Aritmetik) - ATLANDI (Kapali)\n\n");
+  }
+
+  // --------------------------------------------------------------------------
+  // ASAMA 2: AILE 2 (CIFT KUMELI KOPRU) ARAMASI
   // --------------------------------------------------------------------------
   if (ENABLE_FAMILY_2) {
-    printf(">>> [FAZ 2/3]: Aile 2 (Cift Kumeli Kopru Sicramasi) Aramasi "
-           "Baslatiliyor...\n");
+    printf(">>> [FAZ 2/3]: Aile 2 (Cift Kumeli Kopru Sicramasi) Aramasi Baslatiliyor...\n");
     clock_t f2_start = clock();
     int min_bridge = 2 * P - 4;
     int max_bridge = 4 * P - 10;
@@ -338,16 +326,14 @@ int main(int argc, char **argv) {
     printf("    [Faz 2 Tamamlandi]: Sure: %.4fs | Dugum: %lld\n\n", f2_time,
            stats_f2.total_nodes);
   } else {
-    printf(">>> [FAZ 2/3]: Aile 2 (Cift Kumeli Kopru Sicramasi) - ATLANDI "
-           "(Kapali)\n\n");
+    printf(">>> [FAZ 2/3]: Aile 2 (Cift Kumeli Kopru Sicramasi) - ATLANDI (Kapali)\n\n");
   }
 
   // --------------------------------------------------------------------------
-  // ASAMA 3: AILE 3 (ASIMETRIK UC SICRAMASI) ARAMASI (OPSIYONEL)
+  // ASAMA 3: AILE 3 (ASIMETRIK UC SICRAMASI) ARAMASI
   // --------------------------------------------------------------------------
   if (ENABLE_FAMILY_3) {
-    printf(">>> [FAZ 3/3]: Aile 3 (Asimetrik Uc Sicramasi) Aramasi "
-           "Baslatiliyor...\n");
+    printf(">>> [FAZ 3/3]: Aile 3 (Asimetrik Uc Sicramasi) Aramasi Baslatiliyor...\n");
     clock_t f3_start = clock();
     for (int tail_val = min_target_sum; tail_val <= min_target_sum + 20;
          tail_val += 2) {
@@ -360,8 +346,7 @@ int main(int argc, char **argv) {
     printf("    [Faz 3 Tamamlandi]: Sure: %.4fs | Dugum: %lld\n\n", f3_time,
            stats_f3.total_nodes);
   } else {
-    printf(">>> [FAZ 3/3]: Aile 3 (Asimetrik Uc Sicramasi) - ATLANDI "
-           "(Kapali)\n\n");
+    printf(">>> [FAZ 3/3]: Aile 3 (Asimetrik Uc Sicramasi) - ATLANDI (Kapali)\n\n");
   }
 
   double total_time = ((double)(clock() - start_all)) / CLOCKS_PER_SEC;
@@ -369,35 +354,109 @@ int main(int argc, char **argv) {
   // --------------------------------------------------------------------------
   // RAPORLAMA VE ISTATISTIKLER
   // --------------------------------------------------------------------------
-  printf("====================================================================="
-         "=\n");
-  printf("              3-AILE MORFOLOJIK ARAMA RAPORU                         "
-         " \n");
-  printf("====================================================================="
-         "=\n");
+  printf("=====================================================================\n");
+  printf("              3-AILE MORFOLOJIK ARAMA RAPORU                         \n");
+  printf("=====================================================================\n");
   printf("Toplam Dugum Ziyareti (DFS Calls) : %lld\n", stats_total.total_nodes);
-  printf("Test Edilen Yaprak (Kombinasyon)  : %lld\n",
-         stats_total.tested_leaves);
-  printf("En Yuksek Skor                    : %d\n", best_score);
-  printf("Bulunan Cozum Sayisi              : %d\n",
-         g_kb.table[P].solutions_count);
+  printf("Test Edilen Yaprak (Kombinasyon)  : %lld\n", stats_total.tested_leaves);
+  printf("En Yuksek Skor                    : M = %d\n", best_score);
+  printf("Bulunan Cozum Sayisi              : %d\n", g_kb.table[P].solutions_count);
   printf("Gecen Toplam Sure                 : %.4f saniye\n", total_time);
   if (total_time > 0) {
     printf("Ortalama Arama Hizi               : %.2f Milyon test/sn\n",
            (stats_total.tested_leaves / 1000000.0) / total_time);
   }
-  printf("---------------------------------------------------------------------"
-         "-\n");
+  printf("---------------------------------------------------------------------\n");
   printf("[BUDAMA ETKINLIK RAPORU]\n");
   printf(" - Parite Kurali (Tek sayi < 2)   : %lld yaprak elendi\n",
          stats_total.prune_parity);
-  printf("====================================================================="
-         "=\n");
+  printf("=====================================================================\n");
 
-  printf("\n[Guncellenmis DP Tablo Kaydi - pspp_database.json Kaydedildi]:\n");
-  kb_print_record(&g_kb.table[P]);
-  printf("====================================================================="
-         "=\n");
+  if (g_kb.table[P].score > 0) {
+    printf("\n[Guncellenmis DP Tablo Kaydi - pspp_database.json Kaydedildi]:\n");
+    kb_print_record(&g_kb.table[P]);
+    kb_save_json(&g_kb, DB_FILE);
+  }
+}
 
+void interactive_mode() {
+  char buf[64];
+  printf("=====================================================================\n");
+  printf("       PSPP MORFOLOJIK 3-AILE ARAMA MOTORU (INTERAKTIF MOD)          \n");
+  printf("=====================================================================\n\n");
+
+  printf("Hedef Boyut P (Eleman Sayisi) [Varsayilan: 8]: ");
+  if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
+    int val = atoi(buf);
+    if (val >= 1 && val < MAX_P) P = val;
+  } else {
+    P = 8;
+  }
+
+  bilinen_max = kb_get_target_max(&g_kb, P);
+  printf("Hedef Esik / Zemin Citasi [Varsayilan: %d]: ", bilinen_max);
+  if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
+    int val = atoi(buf);
+    if (val >= 0) bilinen_max = val;
+  }
+
+  printf("Aile 1 (Siki Moduler Aritmetik) [1=Aktif, 0=Kapali, Varsayilan: 1]: ");
+  if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
+    ENABLE_FAMILY_1 = (atoi(buf) != 0);
+  } else {
+    ENABLE_FAMILY_1 = true;
+  }
+
+  printf("Aile 2 (Cift Kumeli Kopru)      [1=Aktif, 0=Kapali, Varsayilan: 1]: ");
+  if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
+    ENABLE_FAMILY_2 = (atoi(buf) != 0);
+  } else {
+    ENABLE_FAMILY_2 = true;
+  }
+
+  printf("Aile 3 (Asimetrik Uc Sicramasi) [1=Aktif, 0=Kapali, Varsayilan: 1]: ");
+  if (fgets(buf, sizeof(buf), stdin) && buf[0] != '\n') {
+    ENABLE_FAMILY_3 = (atoi(buf) != 0);
+  } else {
+    ENABLE_FAMILY_3 = true;
+  }
+
+  printf("\n");
+  run_family_solver();
+
+  printf("\nCikis yapmak icin Enter tusuna basin...");
+  getchar();
+}
+
+int main(int argc, char **argv) {
+  kb_init(&g_kb);
+
+  if (argc == 1) {
+    interactive_mode();
+    return 0;
+  }
+
+  if (argc > 1) P = atoi(argv[1]);
+  bilinen_max = kb_get_target_max(&g_kb, P);
+
+  for (int i = 2; i < argc; i++) {
+    if (strcmp(argv[i], "--esik") == 0 && i + 1 < argc) {
+      bilinen_max = atoi(argv[++i]);
+    } else if (strcmp(argv[i], "--f1") == 0 && i + 1 < argc) {
+      ENABLE_FAMILY_1 = (atoi(argv[++i]) != 0);
+    } else if (strcmp(argv[i], "--f2") == 0 && i + 1 < argc) {
+      ENABLE_FAMILY_2 = (atoi(argv[++i]) != 0);
+    } else if (strcmp(argv[i], "--f3") == 0 && i + 1 < argc) {
+      ENABLE_FAMILY_3 = (atoi(argv[++i]) != 0);
+    } else if (strcmp(argv[i], "--all") == 0) {
+      ENABLE_FAMILY_1 = true;
+      ENABLE_FAMILY_2 = true;
+      ENABLE_FAMILY_3 = true;
+    } else if (atoi(argv[i]) > 0 && bilinen_max == 0) {
+      bilinen_max = atoi(argv[i]);
+    }
+  }
+
+  run_family_solver();
   return 0;
 }
