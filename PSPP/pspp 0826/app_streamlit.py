@@ -208,7 +208,7 @@ REF_P, REF_SCORE, DYNAMIC_SLOPE = get_dynamic_projection_params(KNOWLEDGE_BASE)
 # -----------------------------------------------------------------------------
 # VERİ TABLOSUNU OLUŞTUR
 # -----------------------------------------------------------------------------
-MAX_TABLE_P = 50
+MAX_TABLE_P = 100
 p_vals = list(range(1, MAX_TABLE_P + 1))
 
 rows = []
@@ -312,7 +312,7 @@ with tab1:
     # Grafik Filtreleri
     col_ctrl1, col_ctrl2 = st.columns([1, 3])
     with col_ctrl1:
-        max_p_view = st.slider("Görüntülenecek P Boyutu Aralığı:", min_value=5, max_value=50, value=25, step=1)
+        max_p_view = st.slider("Görüntülenecek P Boyutu Aralığı:", min_value=5, max_value=100, value=50, step=1)
         scale_type = st.radio("Grafik Ölçeği:", ["Lineer", "Logaritmik"], horizontal=True)
     
     df_filtered = df_bounds[df_bounds["P"] <= max_p_view].copy()
@@ -567,37 +567,53 @@ with tab3:
     - 🔴 **İlk Eksik Sayı ($M+1$):** Zincirin koptuğu üretilemeyen ilk sayıdır.
     """)
 
-    # Grid Oluştur
-    grid_cols = st.columns(15)
-    for num in range(1, active_score + 2):
+    # Büyük Skorlar İçin Sayfalama / Görünüm Aralığı Seçici
+    max_cells_per_page = 300
+    total_nums = active_score + 1
+    
+    if total_nums > max_cells_per_page:
+        num_pages = math.ceil(total_nums / max_cells_per_page)
+        page_idx = st.selectbox(
+            f"Görüntülenecek Sayı Aralığı Seçin (Toplam {total_nums:,} Sayı):", 
+            list(range(num_pages)), 
+            format_func=lambda i: f"{i * max_cells_per_page + 1} .. {min((i + 1) * max_cells_per_page, total_nums)}"
+        )
+        start_num = page_idx * max_cells_per_page + 1
+        end_num = min((page_idx + 1) * max_cells_per_page, total_nums)
+    else:
+        start_num = 1
+        end_num = total_nums
+
+    # Renk Belirleme (Yuksek Kontrastli Parlak Tasarim)
+    bg_colors = {
+        "natural": "#065F46",
+        "sum": "#0369A1",
+        "diff": "#6B21A8",
+        "both": "#92400E",
+        "missing": "#991B1B"
+    }
+    border_colors = {
+        "natural": "#34D399",
+        "sum": "#38BDF8",
+        "diff": "#C084FC",
+        "both": "#FCD34D",
+        "missing": "#F87171"
+    }
+
+    # Tek Geçişte Yüksek Performanslı CSS Grid HTML Oluşturma (0.02 saniye)
+    grid_items = []
+    for num in range(start_num, end_num + 1):
         origin_type, badge, details = analyze_number_origin(active_dizi, num, active_score)
-        
-        # Renk Belirleme (Yuksek Kontrastli Parlak Tasarim)
-        bg_colors = {
-            "natural": "#065F46",
-            "sum": "#0369A1",
-            "diff": "#6B21A8",
-            "both": "#92400E",
-            "missing": "#991B1B"
-        }
-        border_colors = {
-            "natural": "#34D399",
-            "sum": "#38BDF8",
-            "diff": "#C084FC",
-            "both": "#FCD34D",
-            "missing": "#F87171"
-        }
-        
-        c = grid_cols[(num - 1) % 15]
-        with c:
-            st.markdown(f"""
-            <div style="background: {bg_colors[origin_type]}; color: #FFFFFF; 
-                        border: 2px solid {border_colors[origin_type]}; border-radius: 8px; 
-                        padding: 7px 0; text-align: center; font-family: monospace; font-weight: 800; 
-                        margin-bottom: 6px; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.3);" title="{badge}: {details}">
-                {num}
-            </div>
-            """, unsafe_allow_html=True)
+        bg = bg_colors.get(origin_type, "#1E293B")
+        border = border_colors.get(origin_type, "#475569")
+        grid_items.append(f'<div style="background:{bg}; color:#FFFFFF; border:2px solid {border}; border-radius:8px; padding:7px 0; text-align:center; font-family:monospace; font-weight:800; font-size:0.95rem; box-shadow:0 2px 4px rgba(0,0,0,0.3);" title="{badge}: {details}">{num}</div>')
+
+    full_grid_html = f"""
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; margin-top: 10px; margin-bottom: 20px;">
+        {''.join(grid_items)}
+    </div>
+    """
+    st.markdown(full_grid_html, unsafe_allow_html=True)
 
 # =============================================================================
 # SEKME 4: TÜM DELTA DİZİLERİ MATRİSİ (KALIP KEŞFİ)
@@ -605,7 +621,7 @@ with tab3:
 with tab4:
     st.header("📋 Tüm Boyutlar İçin Alt Alta Delta Matrisi (Görsel Kalıp Keşfi)")
     st.markdown(r"""
-    Tüm $P=1 \dots 17+$ boyutlarının Delta artış dizilerini alt alta sıralayarak gövdedeki ve kuyruktaki matematiksel desenleri görsel olarak inceleyin.
+    Tüm $P=1 \dots 100$ boyutlarının Delta artış dizilerini alt alta sıralayarak gövdedeki ve kuyruktaki matematiksel desenleri görsel olarak inceleyin.
     """)
 
     col_m1, col_m2, col_m3 = st.columns([1, 1, 2])
@@ -613,6 +629,7 @@ with tab4:
         align_mode = st.radio("Hizalama Yönü:", ["Sağa Hizalı (Kuyruk Odaklı)", "Sola Hizalı (Gövde Odaklı)"], horizontal=False)
     with col_m2:
         show_all_solutions = st.checkbox("Alternatif Çözümleri de Göster", value=False)
+        p_filter_range = st.selectbox("Görüntülenecek Boyut Aralığı:", ["Tümü (P = 1 .. 100)", "P = 1 .. 25", "P = 26 .. 50", "P = 51 .. 75", "P = 76 .. 100"])
     with col_m3:
         st.markdown("""
         **Renk Kodları:**  
@@ -626,7 +643,19 @@ with tab4:
 
     # Maksimum P'yi bul
     all_p = sorted([int(k) for k in KNOWLEDGE_BASE.keys() if KNOWLEDGE_BASE[k].get("score", 0) > 0])
-    max_p_len = max(all_p) if all_p else 17
+    
+    if "1 .. 25" in p_filter_range:
+        selected_p_list = [p for p in all_p if p <= 25]
+    elif "26 .. 50" in p_filter_range:
+        selected_p_list = [p for p in all_p if 26 <= p <= 50]
+    elif "51 .. 75" in p_filter_range:
+        selected_p_list = [p for p in all_p if 51 <= p <= 75]
+    elif "76 .. 100" in p_filter_range:
+        selected_p_list = [p for p in all_p if 76 <= p <= 100]
+    else:
+        selected_p_list = all_p
+
+    max_p_len = max(selected_p_list) if selected_p_list else 17
 
     def get_delta_color(val):
         if val >= 8: return "#0284C7", "#38BDF8"
@@ -637,13 +666,13 @@ with tab4:
         if val == 1: return "#E11D48", "#FB7185"
         return "#475569", "#94A3B8"
 
-    # Tablo Oluştur
-    for p in all_p:
+    # Tek Seferde Yüksek Performanslı Matris HTML'i Oluşturma
+    matrix_rows_html = []
+    for p in selected_p_list:
         rec = KNOWLEDGE_BASE[str(p)]
         score = rec["score"]
         solutions = rec.get("solutions", [])
         
-        # Gösterilecek çözümler
         target_sols = solutions if show_all_solutions else (solutions[:1] if solutions else [])
         
         for s_idx, sol in enumerate(target_sols):
@@ -651,16 +680,14 @@ with tab4:
             sum_d = sum(d_list)
             ratio = score / sum_d if sum_d > 0 else 0
             
-            # Badge HTML'leri
             badges = []
             for d_val in d_list:
                 bg, border = get_delta_color(d_val)
-                badge_html = f'<span style="display:inline-block; width:32px; height:32px; line-height:28px; text-align:center; background:{bg}; color:#FFFFFF; border:2px solid {border}; border-radius:6px; font-family:monospace; font-weight:800; font-size:0.95rem; margin:1px;">{d_val}</span>'
+                badge_html = f'<span style="display:inline-block; width:28px; height:28px; line-height:24px; text-align:center; background:{bg}; color:#FFFFFF; border:2px solid {border}; border-radius:5px; font-family:monospace; font-weight:800; font-size:0.85rem; margin:1px;">{d_val}</span>'
                 badges.append(badge_html)
             
-            # Boşluk doldurma (Sağa veya sola hizalama)
             pad_count = max_p_len - len(d_list)
-            empty_badge = '<span style="display:inline-block; width:32px; height:32px; margin:1px;"></span>'
+            empty_badge = '<span style="display:inline-block; width:28px; height:28px; margin:1px;"></span>'
             
             if "Sağa" in align_mode:
                 rendered_cells = (empty_badge * pad_count) + "".join(badges)
@@ -669,28 +696,31 @@ with tab4:
             
             sol_label = f" (#{s_idx+1})" if show_all_solutions and len(solutions) > 1 else ""
             
-            st.markdown(f"""
-            <div style="background:#1E293B; border:1px solid #334155; border-radius:8px; padding:6px 14px; margin-bottom:5px; display:flex; align-items:center; justify-content:space-between;">
+            row_html = f"""
+            <div style="background:#1E293B; border:1px solid #334155; border-radius:8px; padding:4px 12px; margin-bottom:4px; display:flex; align-items:center; justify-content:space-between;">
                 <div style="min-width:145px; font-family:monospace;">
-                    <strong style="color:#38BDF8; font-size:1.05rem;">P = {p:2d}{sol_label}</strong> 
-                    <span style="color:#94A3B8; font-size:0.85rem; margin-left:6px;">M = <strong style="color:#34D399;">{score:3d}</strong> | Σ = {sum_d:2d}</span>
+                    <strong style="color:#38BDF8; font-size:0.95rem;">P = {p:2d}{sol_label}</strong> 
+                    <span style="color:#94A3B8; font-size:0.8rem; margin-left:6px;">M = <strong style="color:#34D399;">{score:4d}</strong> | Σ = {sum_d:3d}</span>
                 </div>
-                <div style="overflow-x:auto; white-space:nowrap; padding:0 8px;">
+                <div style="overflow-x:auto; white-space:nowrap; padding:0 6px;">
                     {rendered_cells}
                 </div>
-                <div style="min-width:85px; text-align:right; font-family:monospace; color:#CBD5E1; font-size:0.85rem;">
+                <div style="min-width:85px; text-align:right; font-family:monospace; color:#CBD5E1; font-size:0.8rem;">
                     M/Σ = <strong style="color:#FCD34D;">{ratio:.2f}</strong>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """
+            matrix_rows_html.append(row_html)
+
+    st.markdown("".join(matrix_rows_html), unsafe_allow_html=True)
 
     # Düz Metin Kopyalama Alanı
-    st.markdown("### 📋 Düz Metin Formatında Tüm Delta Dizileri")
+    st.markdown("### 📋 Düz Metin Formatında Delta Dizileri")
     plain_text_lines = []
-    for p in all_p:
+    for p in selected_p_list:
         rec = KNOWLEDGE_BASE[str(p)]
         d_str = str(rec["solutions"][0]["delta"]) if rec.get("solutions") else "[]"
-        plain_text_lines.append(f"P = {p:2d} | M = {rec['score']:3d} | Delta: {d_str}")
+        plain_text_lines.append(f"P = {p:2d} | M = {rec['score']:4d} | Delta: {d_str}")
     
     st.code("\n".join(plain_text_lines), language="text")
 
