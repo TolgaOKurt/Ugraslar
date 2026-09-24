@@ -19,65 +19,16 @@ import json
 import argparse
 from z3 import *
 
-DB_FILE = os.path.join(os.path.dirname(__file__), "pspp_database.json")
-if not os.path.exists(DB_FILE):
-    DB_FILE = "pspp_database.json"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
 
-def load_database():
-    if os.path.exists(DB_FILE):
-        try:
-            with open(DB_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {}
-
-def save_database(db):
-    try:
-        with open(DB_FILE, "w", encoding="utf-8") as f:
-            json.dump(db, f, indent=2)
-    except Exception as e:
-        print(f"Veritabani yazma hatasi: {e}")
+from db_manager import submit_solution, load_database
 
 def get_known_max(db, P):
     p_key = str(P)
     if p_key in db:
         return db[p_key].get("score", 0)
     return 0
-
-def db_add_solution(db, P, score, p_sol, delta_sol):
-    p_key = str(P)
-    if p_key not in db:
-        db[p_key] = {
-            "p": P,
-            "score": score,
-            "is_optimal": False,
-            "solutions": []
-        }
-    
-    rec = db[p_key]
-    existing_score = rec.get("score", 0)
-    
-    if score > existing_score:
-        rec["score"] = score
-        rec["solutions"] = [{
-            "delta": delta_sol,
-            "dizi": p_sol
-        }]
-        return "NEW_RECORD"
-    elif score == existing_score:
-        # Daha once kaydedilmis mi kontrol et
-        for s in rec.get("solutions", []):
-            if s.get("delta") == delta_sol:
-                return "ALREADY_EXISTS"
-        if "solutions" not in rec:
-            rec["solutions"] = []
-        rec["solutions"].append({
-            "delta": delta_sol,
-            "dizi": p_sol
-        })
-        return "NEW_ALTERNATIVE"
-    return "LOWER_SCORE"
 
 def create_pspp_solver(P, M_target, timeout_ms=0, symmetry_break=True):
     solver = Solver()
@@ -216,16 +167,10 @@ def run_target_search(P, M_target, find_all=False, timeout_sec=60):
         print(f"Ulasilan Zirve Skor   : M = {solutions_found[0][2]}")
     print("=====================================================================")
     
-    # DB Güncelleme
+    # DB Güncelleme (Merkezi db_manager üzerinden)
     if solutions_found:
-        updated = False
         for p_sol, d_sol, m_sol in solutions_found:
-            res = db_add_solution(db, P, m_sol, p_sol, d_sol)
-            if res in ("NEW_RECORD", "NEW_ALTERNATIVE"):
-                updated = True
-        if updated:
-            save_database(db)
-            print("[Veritabani Guncellendi ve Kaydedildi: pspp_database.json]")
+            submit_solution(d_sol, is_delta=True, verbose=True)
 
 def optimize_search(P, start_m=0, timeout_per_step=30):
     print("=====================================================================")
@@ -270,10 +215,8 @@ def optimize_search(P, start_m=0, timeout_per_step=30):
         print(f"Delta Dizi  : {d_best}")
         print("=====================================================================")
         
-        res = db_add_solution(db, P, m_best, p_best, d_best)
-        if res in ("NEW_RECORD", "NEW_ALTERNATIVE"):
-            save_database(db)
-            print("[Veritabani Guncellendi ve Kaydedildi: pspp_database.json]")
+        # Merkezi db_manager üzerinden test et ve kaydet
+        submit_solution(d_best, is_delta=True, verbose=True)
 
 def interactive_mode():
     print("=====================================================================")

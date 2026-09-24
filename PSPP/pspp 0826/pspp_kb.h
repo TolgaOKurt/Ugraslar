@@ -126,50 +126,42 @@ static inline void kb_add_solution(PSPP_KnowledgeBase* kb, int p, int score, con
 }
 
 /*
- * JSON Formatında Diske Kaydetme Fonksiyonu
+ * Çözümü merkezi db_manager.py'ye gönderir.
+ * db_manager bağımsız test eder ve veritabanını güvenli şekilde günceller.
+ */
+static inline int kb_submit_to_db_manager(const int* delta_arr, int n) {
+    char cmd[2048];
+    char delta_str[1536] = {0};
+    for (int i = 0; i < n; i++) {
+        char buf[16];
+        sprintf(buf, "%d%s", delta_arr[i], (i == n - 1) ? "" : ",");
+        strcat(delta_str, buf);
+    }
+    
+    // db_manager.py dosyasını bul (çalışma dizini veya üst dizin)
+    FILE* f = fopen("db_manager.py", "r");
+    if (f) {
+        fclose(f);
+        sprintf(cmd, "python db_manager.py --delta %s", delta_str);
+    } else {
+        sprintf(cmd, "python ../db_manager.py --delta %s", delta_str);
+    }
+    return system(cmd);
+}
+
+/*
+ * Bilgi tabanındaki güncellenmiş çözümleri merkezi db_manager'a iletir.
+ * Dosyayı doğrudan ezmek yerine db_manager üzerinden güvenli doğrulama ve kayıt yapar.
  */
 static inline void kb_save_json(const PSPP_KnowledgeBase* kb, const char* filepath) {
-    FILE* f = fopen(filepath, "w");
-    if (!f) return;
-
-    fprintf(f, "{\n");
-    bool first_p = true;
+    (void)filepath; // Artık dosya doğrudan ezilmiyor, merkezi db_manager kullanılıyor
     for (int p = 1; p < MAX_P; p++) {
         const SolutionRecord* rec = &kb->table[p];
         if (rec->score <= 0 || rec->stored_solutions_count <= 0) continue;
-
-        if (!first_p) fprintf(f, ",\n");
-        first_p = false;
-
-        fprintf(f, "  \"%d\": {\n", p);
-        fprintf(f, "    \"p\": %d,\n", p);
-        fprintf(f, "    \"score\": %d,\n", rec->score);
-        fprintf(f, "    \"is_optimal\": %s,\n", rec->is_optimal ? "true" : "false");
-        fprintf(f, "    \"solutions\": [\n");
-
         for (int s = 0; s < rec->stored_solutions_count; s++) {
-            const DeltaSequence* seq = &rec->solutions[s];
-            fprintf(f, "      {\n");
-            
-            fprintf(f, "        \"delta\": [");
-            for (int i = 0; i < p; i++) {
-                fprintf(f, "%d%s", seq->delta[i], i == p - 1 ? "" : ", ");
-            }
-            fprintf(f, "],\n");
-
-            fprintf(f, "        \"dizi\": [");
-            for (int i = 0; i < p; i++) {
-                fprintf(f, "%d%s", seq->dizi[i], i == p - 1 ? "" : ", ");
-            }
-            fprintf(f, "]\n");
-
-            fprintf(f, "      }%s\n", s == rec->stored_solutions_count - 1 ? "" : ",");
+            kb_submit_to_db_manager(rec->solutions[s].delta, p);
         }
-        fprintf(f, "    ]\n");
-        fprintf(f, "  }");
     }
-    fprintf(f, "\n}\n");
-    fclose(f);
 }
 
 /*
