@@ -1,6 +1,6 @@
 # PSPP C Arama Motoru (solver.c) Algoritma ve Kısıt Mimarisi
 
-Bu doküman, [solver.c](file:///c:/Users/icduser/Documents/GitHub/Ugraslar/PSPP/pspp%200826/solvers/solver.c) içerisinde uygulanan **Ters DFS (Reverse Branch & Bound)** arama algoritmasını, **Kesin Matematiksel Kanunlar** budama mekanizmasını ve **2048-bit donanımsal bitmask skorlama mimarisini** ayrıntılı olarak açıklamaktadır.
+Bu doküman, [`solver.c`](../../solvers/solver.c) içerisinde uygulanan **Ters DFS (Reverse Branch & Bound)** arama algoritmasını, **Kesin Matematiksel Kanunlar** budama mekanizmasını ve **2048-bit donanımsal bitmask skorlama mimarisini** ayrıntılı olarak açıklamaktadır.
 
 ---
 
@@ -71,7 +71,7 @@ flowchart TD
 
 ## 2. Kesin Matematiksel Kanunlar ve solver.c Uyumu
 
-[solver.c](file:///c:/Users/icduser/Documents/GitHub/Ugraslar/PSPP/pspp%200826/solvers/solver.c), evrensel ve kesin arama yapan bir çözücüdür. Bu nedenle [DIZI_KURALLARI.md](file:///c:/Users/icduser/Documents/GitHub/Ugraslar/PSPP/pspp%200826/docs/DIZI_KURALLARI.md) içerisinde tanımlanan **Kesin Matematiksel Kanunlar**'ı eksiksiz uygular:
+[`solver.c`](../../solvers/solver.c), evrensel ve kesin arama yapan bir çözücüdür. Bu nedenle [`DIZI_KURALLARI.md`](../1_temel_teori_ve_kurallar/DIZI_KURALLARI.md) içerisinde tanımlanan **Kesin Matematiksel Kanunlar**'ı eksiksiz uygular:
 
 | # | Kanun Adı | Kod Konumu | Matematiksel Formül | Uygulama & Budama Yöntemi |
 |---|---|---|---|---|
@@ -86,7 +86,7 @@ flowchart TD
 
 ### Sezgisel Kısıtlar Neden solver.c'de Kullanılmaz?
 
-Önceki prototiplerde yer alan bazı deneysel kısıtlar (örneğin $\delta \le 2P$ hibrit sınırı, ikinci eleman sınırı $\delta_1 \le (P-1)\delta_0$, ortanca eleman sınırı $p_{mid} \le \frac{P^2+P}{2}$ ve kuyruk daralma kuralı), [DIZI_KURALLARI.md](file:///c:/Users/icduser/Documents/GitHub/Ugraslar/PSPP/pspp%200826/docs/DIZI_KURALLARI.md) Bölüm 2'de açıklandığı üzere **Sezgisel Kısıtlar** sınıfındadır.
+Önceki prototiplerde yer alan bazı deneysel kısıtlar (örneğin $\delta \le 2P$ hibrit sınırı, ikinci eleman sınırı $\delta_1 \le (P-1)\delta_0$, ortanca eleman sınırı $p_{mid} \le \frac{P^2+P}{2}$ ve kuyruk daralma kuralı), [`DIZI_KURALLARI.md`](../1_temel_teori_ve_kurallar/DIZI_KURALLARI.md) Bölüm 2'de açıklandığı üzere **Sezgisel Kısıtlar** sınıfındadır.
 
 - Bu kısıtlar modüler aileleri hızlandırsa da, **Aile 3 (Uç Sıçraması)** gibi asimetrik küresel rekorları eler.
 - Bu nedenle `solver.c` kesin çözücüsünde sezgisel kısıtlar **kaldırılmış**, arama mutlak teorik tavana kadar evrensel bırakılmıştır.

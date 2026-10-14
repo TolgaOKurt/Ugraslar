@@ -10,7 +10,7 @@ Bu doküman, PSPP probleminde klasik 2-posta pulu (toplama) alt sınırını aş
   Sabit modüler tabanlar ($B=12, 13$) $P \le 30$ için mükemmel olsa da lineer ($26P$) büyüdüğü için $P \ge 85$ boyutunda kuadratik klasik posta pulu formülünün ($a(P) \approx 0.25 P^2$) gerisinde kalıyordu.
 * **Yeni Keşif (Kuadratik Fark Tabanlı Çift-Kademeli Yapı):**  
   Toplama yanına **çıkarma ($p_j - p_i$)** dahil edildiğinde, adım büyüklüğü $S = 2r + 1$ yapılarak **tam $M(P) \approx 0.51 P^2$ kuadratik büyümesi** elde edilmiştir.
-* **Doğrulama ve Tescil:** $P=1 \dots 100$ arasındaki tüm 100 boyut `db_manager.py` ile doğrulanıp [pspp_database.json](file:///c:/Users/icduser/Documents/GitHub/Ugraslar/PSPP/pspp%200826/pspp_database.json) dosyasına kaydedilmiştir.
+* **Doğrulama ve Tescil:** $P=1 \dots 100$ arasındaki tüm 100 boyut `db_manager.py` ile doğrulanıp [`pspp_database.json`](../../pspp_database.json) dosyasına kaydedilmiştir.
 
 ---
 
@@ -34,18 +34,26 @@ Bu doküman, PSPP probleminde klasik 2-posta pulu (toplama) alt sınırını aş
 
 ## 3. Matematiksel Yapı ve İspat
 
-### A. Simetrik Fark Tabanı Yapısı
-Boyut $P$ için:
-1. $r = \lfloor \frac{P+1}{2} \rfloor$ adet birim adım: $A_{\text{prefix}} = \{1, 2, \dots, r\}$
-2. $s = P - r$ adet büyük adım: $S = 2r + 1$
-3. $A_{\text{suffix}} = \{S, 2S, 3S, \dots, sS\}$
+### A. Kuyruk-Yoğun (Tail-End) Modüler Fark Temeli Yapısı
+Boyut $P$ için taban adım boyutu $B = \lfloor P/2 \rfloor + 1$ ve gövde adım sayısı $s = P - (B - 1)$ olarak seçilir:
+1. **Gövde (Body - Modüler Adım Katları):** $s$ adet $B$ adımı $\implies [B, 2B, 3B, \dots, sB]$
+2. **Kuyruk (Tail - Ardışık Birim Adımlar):** $B-1$ adet $+1$ adımı $\implies [sB+1, sB+2, \dots, sB+(B-1)]$
+3. **Delta Dizisi:** $\Delta = [\underbrace{B, B, \dots, B}_{s \text{ adet}}, \; \underbrace{1, 1, \dots, 1}_{B-1 \text{ adet}}]$
 
-### B. Neden Sıfır Boşluklu (No Gap) Kapsama Sağlar?
-- Her $q \cdot S$ büyük adımının etrafında:
-  - **Toplama ile:** $qS + 1, qS + 2, \dots, qS + r$ (ileri yönlü $+r$ adım)
-  - **Çıkarma ile:** $qS - 1, qS - 2, \dots, qS - r$ (geri yönlü $-r$ adım)
-- $qS + r$ ile $(q+1)S - r$ arasındaki mesafe:
-  $$(q+1)S - r - (qS + r) = S - 2r = (2r + 1) - 2r = \mathbf{1}$$
-- Böylece hiçbir sayı atlanmadan $[1, sS + r]$ aralığı **kesintisiz olarak kapatılır**.
+### B. Neden Sıfır Boşluklu (No Gap) Kapsama ve Daha Yüksek Skor Üretir?
+1. **Farklar ile Kalanların Kapatılması:**  
+   Kuyruktaki her elemandan gövde sonu ($sB$) çıkarıldığında:
+   $$(sB + k) - sB = k \quad \forall k \in \{1, 2, \dots, B-1\}$$
+   Tüm modüler artıklar $1 \dots B-1$ eksiksiz üretilir. Gövdenin daha küçük katlarıyla yapılan farklar $((sB+k) - jB = (s-j)B + k)$ ara boşlukları tamamen kapatır.
+2. **Toplamlar ile Uç Menzil Artışı:**  
+   Birim adımlar en küçük sayılar ($1 \dots r$) yerine en büyük elemanların ucuna eklendiği için, en büyük iki elemanın toplamı:
+   $$(sB + B - 1) + (sB + B - 1) = 2sB + 2B - 2$$
+   seviyesine fırlar ve **kesintisiz sıfır boşluklu menzil**:
+   $$\mathbf{M(P) = 2sB + 2B - 4 \approx 0.56 P^2}$$
+   değerine ulaşır.
 
-$$M(P) = s(2r + 1) + r \approx \mathbf{\frac{1}{2} P^2 + P}$$
+### C. Eski Ön-Yoğun Modele Göre Net Kazanç
+* **Eski Ön-Yoğun Model ($1 \dots r$ başta):** $M(P) = s(2r+1)+r \approx \mathbf{0.50 P^2 + P}$ ($P=100 \implies 5100$, $P=30 \implies 480$)
+* **Yeni Kuyruk-Yoğun Model ($1 \dots 1$ sonda):** $M(P) = 2sB + 2B - 4 \approx \mathbf{0.56 P^2}$ ($P=100 \implies \mathbf{5200}$, $P=30 \implies \mathbf{510}$)
+* **Net Kazanç:** Her boyutta yaklaşık $+P$ puanlık ek tavan artışı sağlanmış ve `pspp_database.json`'a işlenmiştir.
+

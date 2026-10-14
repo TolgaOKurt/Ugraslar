@@ -27,7 +27,8 @@ PSPP dizilerinde her eklenen elemanın skora katkısı, kökün kendi içinde ba
 
 ---
 
-### 3. Canlı Deney Sonuçları: Hedef $P=35$ (DB Zirvesi: $M=647$)
+### 3. Canlı Deney Sonuçları: Hedef $P=35$
+*(Tarihi Deney Notu: Deneyin yapıldığı tarihte $P=35$ DB zirvesi $M=647$ ve $P=30$ zirvesi $M=504$ idi. Güncel veritabanında Kuyruk-Yoğun model ile $P=30 \implies \mathbf{M=510}$ ve $P=35 \implies \mathbf{M=682}$ olarak güncellenmiştir; ancak kök büyütme vites dinamikleri aynı matematiksel prensiple geçerliliğini korumaktadır).*
 
 Aynı $P=35$ hedefine farklı boyutlardaki başlangıç kökleriyle tırmanıldığında elde edilen net veriler:
 
@@ -41,6 +42,7 @@ Aynı $P=35$ hedefine farklı boyutlardaki başlangıç kökleriyle tırmanıld�
 > **Deneyin Gösterdiği Gerçek:**
 > $P=35$ hedefine $P=3$'ten yürümek bisikletle otobana çıkmak gibidir ($M=287$).
 > Oysa veritabanından hazır $P=15$ kökünü alıp büyüttüğümüzde, adım başına kazanç **$+16.45$**'e fırlamış ve skor $M=487$'ye ulaşmıştır!
+
 
 ---
 
@@ -71,7 +73,7 @@ graph TD
 
 ### 5. Motor Üzerinde Pratik Kullanım (`--from-db`)
 
-Geliştirilen [root_grower.py](file:///c:/Users/TolgaLocal/Documents/Github/Ugraslar/PSPP/pspp%200826/scripts/root_grower.py) motorunda bu stratejiyi çalıştırmak için `--from-db` bayrağı kullanılır:
+Geliştirilen [`root_grower.py`](../../scripts/root_grower.py) motorunda bu stratejiyi çalıştırmak için `--from-db` bayrağı kullanılır:
 
 ```powershell
 # Örnek 1: DB'deki P=15 optimumunu kök al ve P=25'e kadar büyüt

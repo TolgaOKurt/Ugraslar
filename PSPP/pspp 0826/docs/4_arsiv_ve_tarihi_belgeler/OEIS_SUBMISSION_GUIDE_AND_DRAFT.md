@@ -1,9 +1,12 @@
 # OEIS Başvuru Rehberi ve Hazır Taslak Dokümanı
-## Sequence Name: Maximum continuous range reachable using at most 2 elements with addition and subtraction from a set of size $n$ (PSPP - Postage Stamp Problem with Subtraction)
-
-Bu doküman, **On-Line Encyclopedia of Integer Sequences (OEIS)** platformuna yeni bir tamsayı dizisi (Sequence) başvurusu yapmak için gereken tüm standart alanları (Name, Data, Comments, References, Links, Formula, Example, Program, Crossrefs, Keywords) ve editör onay sürecini hızlandıracak bilimsel açıklamaları içerir.
+> ⚠️ **ARŞİV BELGESİDİR (GÜNCEL DEĞİLDİR):**
+> Bu doküman, dizi OEIS'e sunulmadan önce hazırlanmış **ilk başvuru taslağıdır**.
+> Dizi resmi olarak **A398332** numarasıyla OEIS'e kabul edilmiştir.
+> Bu taslaktaki veriler eski ön-yoğun kuadratik model ($a(30)=504, a(33)=577$) dönemine aittir.
+> **Güncel resmi OEIS wiki metni için bakınız:** [`docs/oeis wiki page.md`](../oeis%20wiki%20page.md)
 
 ---
+
 
 ## 1. OEIS Başvuru Özeti ve Alanları (Kopyalanmaya Hazır Taslak)
 

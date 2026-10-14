@@ -150,4 +150,4 @@ Bu geçiş kuralları kullanılarak oluşturulacak yeni nesil bir **"Tohum Taban
 
 1. **Milyonlarca Kat Hız:** Arama uzayını $O(k^P)$ yerine $O(1)$ hedefli adaylara indirger.
 2. **Büyük $P$ Seviyelerine Kolay Ulaşım:** $P=15, 16, 20$ gibi derin boyutlarda kör arama imkansızken, modüler tohum genişlemesi ile saniyeler içinde yeni rekorlar bulunabilir.
-3. **Veritabanı Entegrasyonu:** Her yeni keşif doğrudan [pspp_database.json](file:///c:/Users/icduser/Documents/GitHub/Ugraslar/PSPP/pspp%200826/pspp_database.json) bilgi tabanına aktarılarak sonraki tahminler için tohum havuzunu zenginleştirir.
+3. **Veritabanı Entegrasyonu:** Her yeni keşif doğrudan [`pspp_database.json`](../../pspp_database.json) bilgi tabanına aktarılarak sonraki tahminler için tohum havuzunu zenginleştirir.

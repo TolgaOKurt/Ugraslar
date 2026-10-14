@@ -1,8 +1,11 @@
 # PSPP $P=10 \dots 30$ Derin Soy Ağacı, Arama Süreci ve Rekorlar
-
-Bu doküman, PSPP probleminde $P=10$'dan $P=30$'a kadar yürütülen **büyük ölçekli soy ağacı genişletmesi, bayrak devri testleri, kuyruk mutasyonları ve kırılan yeni dünya rekorlarını** ayrıntılı olarak belgeler.
+> ⚠️ **TARİHİ BELGE (GÜNCEL DEĞİLDİR):**
+> Bu doküman, Taban-12 hanedanlığının $P=30$'da $M=504$ skorunu verdiği **ara aşama raporudur**.
+> $P=30$ için bulunan $M=504$ rekoru, **Kuyruk-Yoğun Kuadratik Temel ($M=510$)** ile aşılmış ve $P=30$'dan itibaren kuadratik döneme geçilmiştir.
+> **Güncel veritabanı kayıtları için bakınız:** [`pspp_database.json`](../../pspp_database.json) ve [`docs/3_boyut_analizleri_ve_rekorlar/PSPP_P33_P34_KIRILMA_NOKTASI_VE_KUADRATIK_DONEM.md`](../3_boyut_analizleri_ve_rekorlar/PSPP_P33_P34_KIRILMA_NOKTASI_VE_KUADRATIK_DONEM.md)
 
 ---
+
 
 ## 1. Yönetici Özeti ve Büyük Keşifler
 

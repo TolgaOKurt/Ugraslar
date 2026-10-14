@@ -1,8 +1,11 @@
 # PSPP Bayrak Devri (Flag Transition) ve Hanedanlık Süreleri Analitik Modeli
-
-Bu doküman, PSPP (Postage Stamp with Subtraction) probleminde $P$ boyutu büyüdükçe modüler tabanların ($B$) hangi boyutlarda hüküm süreceğini, kuyruk kurulum maliyetlerinin amortisman sürelerini ve $P=1 \dots 150+$ aralığında **Bayrak Devri Boyutlarını ($P_{\text{devir}}$)** öngören analitik matematiksel modeli belgeler.
+> ⚠️ **TARİHİ BELGE / ÇÜRÜTÜLMÜŞ HİPOTEZ (GÜNCEL DEĞİLDİR):**
+> Bu doküman, $P \ge 20$ sonrasında doğrusal modüler tabanların ($B=12 \to 13 \to 14$) $P=155$'e kadar bayrağı devredeceğini öngören **eski doğrusal hipotezdir**.
+> Gerçekte, $P=30$'da keşfedilen **Kuyruk-Yoğun Kuadratik Fark Temeli ($M=510 > 504$)**, doğrusal taban hanedanlığını $P=30$'da sonlandırmıştır.
+> **Güncel durum ve kırılma analizi için bakınız:** [`docs/3_boyut_analizleri_ve_rekorlar/PSPP_P33_P34_KIRILMA_NOKTASI_VE_KUADRATIK_DONEM.md`](../3_boyut_analizleri_ve_rekorlar/PSPP_P33_P34_KIRILMA_NOKTASI_VE_KUADRATIK_DONEM.md)
 
 ---
+
 
 ## 1. Bayrak Devri ve Hanedanlıklar Şeması (Mermaid)
 

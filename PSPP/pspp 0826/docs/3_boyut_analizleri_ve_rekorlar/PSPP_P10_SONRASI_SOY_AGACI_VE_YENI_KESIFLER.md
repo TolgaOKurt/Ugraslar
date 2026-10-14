@@ -119,6 +119,7 @@ Seed Extrapolator motoru çalıştırıldığında, daha önce veritabanında ol
 
 ## 6. Özet Sonuç
 
-- $P > 10$ boyutlarında Aile 2 ve Aile 3'ün mermisi tükenir; ancak modüler evrende **asla tek bir soy kalmaz**.
-- Her 2-3 boyutta bir, bir üst taban ($6 \to 8 \to 9 \to 10 \to 11 \dots$) devreye girer.
-- Geçiş boyutlarında ($P=13, 15, 17$) eski ve yeni tabanlar eşzamanlı optimumlar üreterek zengin bir soy dallanması oluşturur.
+- $P > 10$ boyutlarında Aile 2 ve Aile 3'ün kapasitesi tükenir; yerini modüler taban zincirlerine bırakır.
+- Her birkaç boyutta bir, bir üst taban ($6 \to 8 \to 9 \to 10 \to 11 \to 12$) devreye girer.
+- Geçiş boyutlarında ($P=13, 15, 17, 20$) eski ve yeni tabanlar eşzamanlı optimumlar üreterek zengin bir soy dallanması oluşturur.
+- Bu modüler hanedanlıklar $P=29$'a ($M=480$) kadar hüküm sürer; $P \ge 30$'dan itibaren ise yerini kuadratik **Kuyruk-Yoğun Fark Temeli**ne ($M \approx 0.56 P^2$) bırakır (bakınız: [`PSPP_P33_P34_KIRILMA_NOKTASI_VE_KUADRATIK_DONEM.md`](./PSPP_P33_P34_KIRILMA_NOKTASI_VE_KUADRATIK_DONEM.md)).
