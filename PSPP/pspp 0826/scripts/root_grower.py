@@ -126,6 +126,65 @@ class RootGrower:
             return self.db[p_str].get("score", 0)
         return 0
 
+    def get_smart_candidates(
+        self,
+        cur_seq: tuple[int, ...] | list[int],
+        cur_score: int,
+        p_curr: int,
+        append_only: bool = False,
+        max_gaps: int = 8
+    ) -> list[int]:
+        """
+        Kombinatoryel patlamayı ve kör arama uzayını (O(10^100)) engelleyen,
+        yalnızca matematiksel olarak M skorunu artırabilecek veya periyodik
+        adımı devam ettirebilecek adayları üreten akıllı aday üretici.
+        """
+        cands = set()
+        last = cur_seq[-1]
+
+        # 1. Boşluk Köprüleme (Gap-Bridging):
+        # M skorunun artması için ilk açıklar olan cur_score+1, +2, ... kapanmak zorundadır.
+        for gap in range(cur_score + 1, cur_score + max_gaps + 1):
+            cands.add(gap)
+            if gap % 2 == 0:
+                cands.add(gap // 2)
+            for a in cur_seq:
+                if gap > a:
+                    cands.add(gap - a)
+                cands.add(gap + a)
+                if a > gap:
+                    cands.add(a - gap)
+
+        # 2. Periyodik Aritmetik ve Modüler Adım Genişlemeleri:
+        deltas = {1, 2, 3, 6, 8, 9, 10, 11, 12, 13, 14, 15, 17, 21, 25}
+        if len(cur_seq) >= 2:
+            deltas.add(cur_seq[-1] - cur_seq[-2])
+
+        # Kuadratik dönem taban adımı: 2k+1 (k ~ P/2)
+        k = max(1, p_curr // 2)
+        for offset_k in (-2, -1, 0, 1, 2):
+            kk = k + offset_k
+            if kk > 0:
+                deltas.add(2 * kk)
+                deltas.add(2 * kk + 1)
+                deltas.add(2 * kk + 2)
+
+        for d in deltas:
+            for offset in (-1, 0, 1):
+                step = d + offset
+                if step > 0:
+                    cands.add(last + step)
+
+        # 3. Yoğun Bölge Doldurucuları (1..k aralığındaki eksik sayılar):
+        for x in range(1, min(k + 3, 60)):
+            if x not in cur_seq:
+                cands.add(x)
+
+        # Filtreleme:
+        if append_only:
+            return sorted([c for c in cands if c > last])
+        return sorted([c for c in cands if c > 0 and c not in cur_seq])
+
     def grow_single_seed(
         self,
         seed: list[int],
@@ -180,13 +239,14 @@ class RootGrower:
             seen_seqs = set()
 
             for cur_seq, cur_score, _ in beam:
-                max_val = cur_seq[-1]
-                min_cand = (max_val + 1) if append_only else 1
-                max_cand = max(int(max_val * cand_multiplier), int(cur_score * 2.0)) + cand_margin
+                smart_cands = self.get_smart_candidates(
+                    cur_seq=cur_seq,
+                    cur_score=cur_score,
+                    p_curr=p,
+                    append_only=append_only
+                )
 
-                for cand in range(min_cand, max_cand):
-                    if cand in cur_seq:
-                        continue
+                for cand in smart_cands:
                     cand_seq = tuple(sorted(cur_seq + (cand,)))
                     if cand_seq in seen_seqs:
                         continue

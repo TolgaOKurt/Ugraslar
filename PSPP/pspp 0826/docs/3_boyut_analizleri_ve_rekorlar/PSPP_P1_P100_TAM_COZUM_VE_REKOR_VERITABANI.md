@@ -16,19 +16,19 @@ Bu doküman, PSPP probleminde klasik 2-posta pulu (toplama) alt sınırını aş
 
 ## 2. Klasik Posta Pulu vs Yeni PSPP Rekorları ($P=1 \dots 100$)
 
-| Boyut ($P$) | Klasik Posta Pulu $a(P)$ *(Yalnızca Toplam)* | Eski Sabit Taban Skoru *(Lineer)* | **Yeni PSPP Rekor Skoru ($M$)** *(Toplam + Fark)* | Fark Operasyonu Kazancı |
+| Boyut ($P$) | Klasik Posta Pulu $a(P)$ *(Yalnızca Toplam)* | Eski Sabit Taban Skoru *(Lineer)* | **Yeni PSPP Rekor Skoru ($M$)** *(Kuyruk-Yoğun Kuadratik)* | Fark Operasyonu Kazancı |
 |:---:|:---:|:---:|:---:|:---:|
 | **$P = 10$** | 40 | 76 | **76** (Taban-6) | $+36$ |
 | **$P = 20$** | 130 | 264 | **264** (Taban-12) | $+134$ |
-| **$P = 30$** | 270 | 504 | **504** (Taban-12) | $+234$ |
-| **$P = 40$** | 460 | 744 | **840** (Kuadratik) | **$+380$** |
-| **$P = 50$** | 700 | 1002 | **1300** (Kuadratik) | **$+600$** |
-| **$P = 60$** | 990 | 1262 | **1860** (Kuadratik) | **$+870$** |
-| **$P = 70$** | 1330 | 1522 | **2520** (Kuadratik) | **$+1190$** |
-| **$P = 80$** | 1720 | 1782 | **3280** (Kuadratik) | **$+1560$** |
-| **$P = 85$** | 1934 | 1912 *(Geride kalmıştı)* | **3697** *(Klasik Pulu 2'ye Katladı!)* | **$+1763$** |
-| **$P = 90$** | 2160 | 2042 | **4140** | **$+1980$** |
-| **$P = 100$** | 2650 | 2302 | **5100** | **$+2450$** |
+| **$P = 30$** | 270 | 504 | **510** *(Yeni Kırılma Noktası)* | $+240$ |
+| **$P = 40$** | 460 | 744 | **880** *(Kuyruk-Yoğun)* | **$+420$** |
+| **$P = 50$** | 700 | 1002 | **1350** *(Kuyruk-Yoğun)* | **$+650$** |
+| **$P = 60$** | 990 | 1262 | **1920** *(Kuyruk-Yoğun)* | **$+930$** |
+| **$P = 70$** | 1330 | 1522 | **2590** *(Kuyruk-Yoğun)* | **$+1260$** |
+| **$P = 80$** | 1720 | 1782 | **3360** *(Kuyruk-Yoğun)* | **$+1640$** |
+| **$P = 85$** | 1934 | 1912 | **3782** *(Kuyruk-Yoğun)* | **$+1848$** |
+| **$P = 90$** | 2160 | 2042 | **4230** *(Kuyruk-Yoğun)* | **$+2070$** |
+| **$P = 100$** | 2650 | 2302 | **5200** *(Kuyruk-Yoğun)* | **$+2550$** |
 
 ---
 
