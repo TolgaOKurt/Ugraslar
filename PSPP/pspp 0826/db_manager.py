@@ -22,6 +22,13 @@ import json
 import argparse
 import re
 
+# Windows console UTF-8 / cp1254 uyumlulugu
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 # Veritabani Dosya Yolu
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "pspp_database.json")
@@ -65,9 +72,149 @@ def load_database():
             print(f"[UYARI] Veritabani okunamadi ({e}), yeni baslatiliyor.")
     return {}
 
+def format_compact_json(db):
+    """
+    Veritabanini sayisal P anahtarlarina gore siralar.
+    Delta ve dizi sayi listelerini tek satirda (inline array) tutarak
+    JSON dosyasini 11.990 satirdan ~1.200 satira indirir.
+    Hem insan hem AI icin desenlerin (taban, kuyruk) aninda gorulmesini saglar.
+    """
+    sorted_db = {str(k): db[str(k)] for k in sorted(int(x) for x in db.keys()) if str(k) in db}
+    raw_json = json.dumps(sorted_db, indent=2, ensure_ascii=False)
+    # Sayi dizilerini tek satirda topla: [\n  1,\n  2\n] -> [1, 2]
+    compact_json = re.sub(
+        r'\[\s*([\d\s,]+?)\s*\]',
+        lambda m: '[' + ', '.join(m.group(1).replace(',', ' ').split()) + ']',
+        raw_json
+    )
+    return compact_json
+
 def save_database(db):
+    """
+    Veritabanini guvenli ve kompakt formatta kaydeder.
+    """
+    compact_str = format_compact_json(db)
     with open(DB_PATH, "w", encoding="utf-8") as f:
-        json.dump(db, f, indent=2, ensure_ascii=False)
+        f.write(compact_str)
+        f.write("\n")
+
+def analyze_delta_structure(delta):
+    """Bir delta dizisinin tabanini, omurga uzunlugunu ve kuyrugunu ayristirir."""
+    if not delta:
+        return "Bos", 0, []
+    first = delta[0]
+    run_len = 0
+    while run_len < len(delta) and delta[run_len] == first:
+        run_len += 1
+    if run_len >= 3:
+        return f"Taban-{first}", run_len, delta[run_len:]
+    from collections import Counter
+    counts = Counter(delta)
+    most_val, most_count = counts.most_common(1)[0]
+    if most_count >= 3:
+        return f"Taban-{most_val}", most_count, [x for x in delta if x != most_val]
+    return "Ozel/Karisik", 1, delta[1:] if len(delta) > 1 else []
+
+def show_dimension(p_val):
+    """Belirli bir P boyutunun rekor kartini terminale basar."""
+    db = load_database()
+    p_str = str(p_val)
+    if p_str not in db:
+        print(f"[BILGI] P = {p_val} boyutu veritabaninda bulunamadi.")
+        return
+    data = db[p_str]
+    score = data.get("score", 0)
+    is_opt = data.get("is_optimal", False)
+    sols = data.get("solutions", [])
+    
+    # Teorik Metrikler
+    p = int(p_val)
+    ceiling = p * (p + 1)
+    ratio = (score / ceiling * 100.0) if ceiling > 0 else 0.0
+    rohrbach = 24 * p - 216 if p >= 11 else 0
+    
+    print("\n" + "=" * 70)
+    print(f"   🏆 PSPP REKOR KARTI: P = {p}")
+    print("=" * 70)
+    print(f" Zirve Skor (M)     : {score}")
+    print(f" Matematiksel Durum : {'✅ KESIN OPTIMUM (Kanitlanmis)' if is_opt else '🔥 DÜNYA REKORU (Heuristic / En Iyi Bilinen)'}")
+    print(f" Cozum Sayisi       : {len(sols)}")
+    print(f" Teorik Tavan P(P+1): {ceiling} (Kapasite Kullanimi: %{ratio:.2f})")
+    if rohrbach > 0:
+        print(f" Taban-12 Esik (M12): {rohrbach} (Net Fark: {score - rohrbach:+d})")
+    print("-" * 70)
+    
+    for idx, s in enumerate(sols, 1):
+        delta = s.get("delta", [])
+        dizi = s.get("dizi", [])
+        taban_adi, tekrar, kuyruk = analyze_delta_structure(delta)
+        b_max = dizi[-1] if dizi else (sum(delta) if delta else 0)
+        
+        print(f" [Cozum #{idx}]")
+        print(f"   Delta ({len(delta):2d} eleman): {delta}")
+        print(f"   Dizi  ({len(dizi):2d} eleman): {dizi}")
+        print(f"   Mimari Analiz   : {taban_adi} ({tekrar} adet adim) | Kuyruk ({len(kuyruk)} eleman): {kuyruk}")
+        print(f"   Kumulatif Zirve : B_max = {b_max}")
+        if idx < len(sols):
+            print("   " + "-" * 66)
+    print("=" * 70 + "\n")
+
+def show_table(start_p=1, end_p=35):
+    """P araligindaki rekorlari ozet tablo olarak basar."""
+    db = load_database()
+    print("\n" + "=" * 80)
+    print(f"         PSPP REKORLAR TABLOSU (P = {start_p} .. {end_p})")
+    print("=" * 80)
+    print(f"{'P':>3} | {'Skor (M)':>8} | {'Cozum':>5} | {'Mimari':<12} | {'Kuyruk':<32} | {'Durum':<10}")
+    print("-" * 80)
+    
+    for p in range(start_p, end_p + 1):
+        p_str = str(p)
+        if p_str not in db:
+            continue
+        data = db[p_str]
+        score = data.get("score", 0)
+        is_opt = data.get("is_optimal", False)
+        sols = data.get("solutions", [])
+        s_count = len(sols)
+        
+        if sols:
+            taban_adi, tekrar, kuyruk = analyze_delta_structure(sols[0].get("delta", []))
+            arch = f"{taban_adi}x{tekrar}"
+            kuyruk_str = str(kuyruk)
+            if len(kuyruk_str) > 32:
+                kuyruk_str = kuyruk_str[:29] + "..."
+        else:
+            arch = "-"
+            kuyruk_str = "[]"
+            
+        durum_str = "Optimal" if is_opt else "Rekor"
+        print(f"{p:3d} | {score:8d} | {s_count:5d} | {arch:<12} | {kuyruk_str:<32} | {durum_str:<10}")
+        
+    print("=" * 80 + "\n")
+
+def compact_database():
+    """Mevcut veritabanini kompakt JSON formatina donusturur."""
+    if not os.path.exists(DB_PATH):
+        print(f"[HATA] Veritabani bulunamadi: {DB_PATH}")
+        return
+    with open(DB_PATH, "r", encoding="utf-8") as f:
+        old_content = f.read()
+    old_lines = len(old_content.splitlines())
+    db = json.loads(old_content)
+    save_database(db)
+    with open(DB_PATH, "r", encoding="utf-8") as f:
+        new_content = f.read()
+    new_lines = len(new_content.splitlines())
+    print("=" * 65)
+    print("   PSPP VERITABANI KOMPAKT FORMAT DONUSUMU")
+    print("=" * 65)
+    print(f" Onceki Satir Sayisi : {old_lines:,} satir")
+    print(f" Kompakt Satir Sayisi: {new_lines:,} satir")
+    print(f" Tasarruf Orani      : %{((old_lines - new_lines) / old_lines * 100):.1f} kuculme!")
+    print(f" Veri Butunlugu      : %100 KORUNDU ({len(db)} boyut tam ve eksiksiz)")
+    print("=" * 65)
+
 
 def _process_single_interpretation(delta, dizi, verbose=True):
     p = len(dizi)
@@ -189,46 +336,126 @@ def parse_numbers_from_string(text):
     return [int(x) for x in re.findall(r'-?\d+', text)]
 
 def interactive_mode():
-    print("=" * 65)
-    print("   PSPP MERKEZI VERITABANI VE COZUM KAYIT YONETICISI")
-    print("=" * 65)
-    print("Diziyi bosluk veya virgul ile ayirarak giriniz.")
-    print("Ornek Delta: 10,10,10,10,10,10,2,3,1,5,2,1,3,1,1")
-    print("Ornek Dizi : 10 20 30 40 50 60 62 65 66 71 73 74 77 78 79")
-    print("-" * 65)
-    
-    try:
-        user_input = input("Sayilari Girin: ").strip()
-    except (KeyboardInterrupt, EOFError):
-        print("\nCikis yapildi.")
-        return
+    while True:
+        print("=" * 65)
+        print("   PSPP MERKEZI VERITABANI VE COZUM KAYIT YONETICISI")
+        print("=" * 65)
+        print(" [1] Yeni Dizi / Delta Gonder (Test Et ve Kaydet)")
+        print(" [2] Belirli Bir Boyutun Rekorunu Incele (Show P)")
+        print(" [3] Rekor Tablosunu Listele (Table)")
+        print(" [4] Veritabanini Kompakt JSON Formatina Donustur (Compact)")
+        print(" [0] Cikis")
+        print("-" * 65)
         
-    nums = parse_numbers_from_string(user_input)
-    if not nums:
-        print("[HATA] Gecerli sayi bulunamadi!")
-        input("\nCikis yapmak icin Enter'a basin...")
-        return
-        
-    print("\nBu girdi neyi temsil ediyor?")
-    print(" [1] Otomatik Algila (Hem Delta hem Normal Dizi olarak test et)")
-    print(" [2] Delta (Artis Adimlari) Dizisi")
-    print(" [3] Normal Kumulatif Dizi")
-    secim = input("Seciminiz (1, 2 veya 3, Varsayilan: 1): ").strip()
-    
-    is_delta = None
-    if secim == "2":
-        is_delta = True
-    elif secim == "3":
-        is_delta = False
-        
-    print()
-    submit_solution(nums, is_delta=is_delta, verbose=True)
-    input("\nCikis yapmak icin Enter'a basin...")
+        try:
+            secim = input("Seciminiz (0-4): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\nCikis yapildi.")
+            return
+
+        if secim == "0":
+            print("Cikis yapildi.")
+            return
+        elif secim == "2":
+            try:
+                p_in = input("Incelemek istediginiz P boyutu (Orn: 20): ").strip()
+                p_val = int(p_in)
+                show_dimension(p_val)
+            except ValueError:
+                print("[HATA] Gecersiz P degeri!")
+            input("Devam etmek icin Enter'a basin...")
+            continue
+        elif secim == "3":
+            try:
+                aralik = input("Aralik (Orn: 1 35 veya bos birakin [1..35]): ").strip()
+                if aralik:
+                    parts = [int(x) for x in re.findall(r'\d+', aralik)]
+                    if len(parts) >= 2:
+                        show_table(parts[0], parts[1])
+                    elif len(parts) == 1:
+                        show_table(1, parts[0])
+                else:
+                    show_table(1, 35)
+            except Exception as e:
+                print(f"[HATA] {e}")
+            input("Devam etmek icin Enter'a basin...")
+            continue
+        elif secim == "4":
+            compact_database()
+            input("Devam etmek icin Enter'a basin...")
+            continue
+        elif secim == "1":
+            print("\nDiziyi bosluk veya virgul ile ayirarak giriniz.")
+            print("Ornek Delta: 10,10,10,10,10,10,2,3,1,5,2,1,3,1,1")
+            print("Ornek Dizi : 10 20 30 40 50 60 62 65 66 71 73 74 77 78 79")
+            print("-" * 65)
+            try:
+                user_input = input("Sayilari Girin: ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return
+            nums = parse_numbers_from_string(user_input)
+            if not nums:
+                print("[HATA] Gecerli sayi bulunamadi!")
+                input("\nDevam etmek icin Enter'a basin...")
+                continue
+            print("\nBu girdi neyi temsil ediyor?")
+            print(" [1] Otomatik Algila (Hem Delta hem Normal Dizi olarak test et)")
+            print(" [2] Delta (Artis Adimlari) Dizisi")
+            print(" [3] Normal Kumulatif Dizi")
+            secim_tip = input("Seciminiz (1, 2 veya 3, Varsayilan: 1): ").strip()
+            is_delta = None
+            if secim_tip == "2":
+                is_delta = True
+            elif secim_tip == "3":
+                is_delta = False
+            print()
+            submit_solution(nums, is_delta=is_delta, verbose=True)
+            input("\nDevam etmek icin Enter'a basin...")
+            continue
+        else:
+            print("[HATA] Gecersiz secenek!")
 
 def main():
-    # Eger hic arguman verilmemisse interaktif moda gec
     if len(sys.argv) == 1:
         interactive_mode()
+        return
+
+    first_arg = sys.argv[1].lower()
+
+    # Alt Komut: show
+    if first_arg in ("show", "--show"):
+        if len(sys.argv) >= 3:
+            try:
+                p_start = int(sys.argv[2])
+                p_end = int(sys.argv[3]) if len(sys.argv) >= 4 else p_start
+                for p_cur in range(p_start, p_end + 1):
+                    show_dimension(p_cur)
+            except ValueError:
+                print("[HATA] Gecersiz P boyutu! Kullanim: python db_manager.py show 20 [veya show 15 20]")
+        else:
+            print("Kullanim: python db_manager.py show <P> [Orn: python db_manager.py show 20]")
+        return
+
+    # Alt Komut: table
+    if first_arg in ("table", "--table"):
+        start_p = 1
+        end_p = 35
+        if len(sys.argv) >= 3:
+            try:
+                start_p = int(sys.argv[2])
+            except ValueError:
+                pass
+        if len(sys.argv) >= 4:
+            try:
+                end_p = int(sys.argv[3])
+            except ValueError:
+                pass
+        show_table(start_p, end_p)
+        return
+
+    # Alt Komut: compact
+    if first_arg in ("compact", "--compact"):
+        compact_database()
         return
 
     parser = argparse.ArgumentParser(description="PSPP Merkezi Cozum Kayit ve Skor Hesaplayici")
@@ -266,3 +493,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

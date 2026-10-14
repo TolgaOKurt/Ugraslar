@@ -23,6 +23,11 @@ import argparse
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "pspp_database.json")
+sys.path.insert(0, BASE_DIR)
+try:
+    from db_manager import save_database
+except ImportError:
+    save_database = None
 
 def evaluate_array(dizi):
     """Bir dizinin kesintisiz 1..M menzil skorunu hesaplar."""
@@ -119,8 +124,11 @@ def run_audit(target_p=None):
         }
         
     if target_p is None:
-        with open(DB_PATH, "w", encoding="utf-8") as f:
-            json.dump(cleaned_db, f, indent=2, ensure_ascii=False)
+        if save_database:
+            save_database(cleaned_db)
+        else:
+            with open(DB_PATH, "w", encoding="utf-8") as f:
+                json.dump(cleaned_db, f, indent=2, ensure_ascii=False)
             
     print("\n" + "=" * 70)
     print("GUNCEL VE TEMIZ VERITABANI OZET TABLOSU")
